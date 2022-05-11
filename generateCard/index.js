@@ -1,47 +1,71 @@
-import nodeHtmlToImage from 'node-html-to-image';
-import font2base64 from 'node-font2base64';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import nodeHtmlToImage from 'node-html-to-image'
+import font2base64 from 'node-font2base64'
+import { unlink as removeFile, readFile } from 'fs/promises'
 
-export const generateImage = async (
-  loanValue,
-  loanToValue,
-  interest,
-  urlImage,
-  nftName
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+export const __dirname = dirname(fileURLToPath(import.meta.url))
+
+export const removeCardFile = async (signature) => {
+  await removeFile(`${__dirname}/cards/card_${signature}.png`)
+}
+
+export const generateCardFile = async (
+  signature,
+  { nftName, nftImageUrl, loanToValue, loanValue, interest, nftPrice }
 ) => {
-  const buffer = await nodeHtmlToImage({
-    output: './image.png',
-    html: createHTML(loanValue, loanToValue, interest, urlImage, nftName),
-  });
+  try {
+    const cardFileName = `card_${signature}.png`
+    const fullPath = `${__dirname}/cards/${cardFileName}`
 
-  return buffer;
-};
+    await nodeHtmlToImage({
+      output: fullPath,
+      html: createHTML({
+        nftName,
+        nftImageUrl,
+        loanToValue,
+        loanValue,
+        interest,
+        nftPrice,
+      }),
+    })
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+    console.log(`${cardFileName} generated`)
+
+    return { cardFileName, fullPath }
+  } catch (error) {
+    console.error('Generate image error', error)
+  }
+}
 
 const oxaniumFontBold = await font2base64.encodeToDataUrl(
   __dirname + '/fonts/Oxanium-ExtraBold.ttf'
-);
+)
 
 const oxaniumFontRegular = await font2base64.encodeToDataUrl(
   __dirname + '/fonts/Oxanium-Regular.ttf'
-);
+)
 
 const oxaniumFontMedium = await font2base64.encodeToDataUrl(
   __dirname + '/fonts/Oxanium-Medium.ttf'
-);
+)
 
-const logoImage = fs.readFileSync(__dirname + '/image/logo.svg', {
+const logoImage = await readFile(__dirname + '/images/logo.svg', {
   encoding: 'base64',
-});
+})
 
-const bgImage = fs.readFileSync(__dirname + '/image/bg.png', {
+const bgImage = await readFile(__dirname + '/images/bg.png', {
   encoding: 'base64',
-});
+})
 
-const createHTML = (loanValue, loanToValue, interest, urlImage, nftName) => `
+const createHTML = ({
+  nftName,
+  nftImageUrl,
+  loanToValue,
+  loanValue,
+  interest,
+  nftPrice,
+}) => `
 <html>
   <head>
     <style>
@@ -97,7 +121,7 @@ const createHTML = (loanValue, loanToValue, interest, urlImage, nftName) => `
     width: 415px;
     height: 415px;
     margin-right: 30px;
-    background-image: url('${urlImage}');
+    background-image: url('${nftImageUrl}');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -169,32 +193,22 @@ const createHTML = (loanValue, loanToValue, interest, urlImage, nftName) => `
             <span class="data-title">Period: </span>7 days
           </p>
           <p class="data-row">
-            <span class="data-title">Loan To Value: </span>${
-              loanToValue?.toNumber() / 100 || 0
-            }%
+            <span class="data-title">Loan To Value: </span>${loanToValue}%
           </p>
           <p class="data-row">
-            <span class="data-title">Loan Value: </span>${(
-              loanValue?.toNumber() / 1e9 || 0
-            ).toFixed(2)} SOL
+            <span class="data-title">Loan Value: </span>${loanValue} SOL
           </p>
           <p class="data-row">
-            <span class="data-title">Interest: </span>${
-              interest?.toNumber() / 100 || 0
-            }%
+            <span class="data-title">Interest: </span>${interest}%
           </p>
         </div>
         <div class="name-wrapper">
           <p class="name-title">Nft collateral</p>
-          <p class="name">${nftName} | ${
-  (loanValue?.toNumber() / 1e9 / (loanToValue?.toNumber() / 10000)).toFixed(
-    2
-  ) || 0
-} SOL</p>
+          <p class="name">${nftName} | ${nftPrice} SOL</p>
         </div>
       </div>
     </div>
   </div>
 </body>
 </html>
-`;
+`
