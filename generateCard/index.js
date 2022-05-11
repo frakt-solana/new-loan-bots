@@ -19,6 +19,7 @@ export const generateCardFile = async (
     const fullPath = `${__dirname}/cards/${cardFileName}`
 
     await nodeHtmlToImage({
+      puppeteerArgs: ['--no-sandbox'],
       output: fullPath,
       html: createHTML({
         nftName,
