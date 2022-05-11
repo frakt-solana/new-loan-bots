@@ -1,21 +1,20 @@
-import Twit from 'twit'
-import fs from 'fs'
-import dotenv from 'dotenv'
-import pkg from '@project-serum/anchor'
-import { notifyDiscord } from './lib/notifyDiscord.js'
-import { generateImage } from './generateImage/index.js'
-import web3 from '@solana/web3.js'
-import { NodeWallet } from '@metaplex/js'
-import { config } from './config.js'
-import { getArweaveMetadataByMint } from './getArve/index.js'
-import { returnAnchorProgram } from '@frakters/nft-lending-v2'
+import Twit from 'twit';
+import fs from 'fs';
+import dotenv from 'dotenv';
+import pkg from '@project-serum/anchor';
+import { notifyDiscord } from './lib/notifyDiscord.js';
+import { generateImage } from './generateImage/index.js';
+import web3 from '@solana/web3.js';
+import { NodeWallet } from '@metaplex/js';
+import { config } from './config.js';
+import { getArweaveMetadataByMint } from './getArve/index.js';
+import { returnAnchorProgram } from '@frakters/nft-lending-v2';
 
-import { initClient as initDiscordClient } from './lib/index.js'
+import { initClient as initDiscordClient } from './lib/index.js';
 
-dotenv.config()
+dotenv.config();
 
-const INTERVAL_POST = 6000
-const client = new Twit(config)
+const client = new Twit(config);
 
 const createFakeWallet = () => {
   const leakedKp = web3.Keypair.fromSecretKey(
@@ -25,9 +24,9 @@ const createFakeWallet = () => {
       137, 121, 79, 1, 160, 223, 124, 241, 202, 203, 220, 237, 50, 242, 57, 158,
       226, 207, 203, 188, 43, 28, 70, 110, 214, 234, 251, 15, 249, 157, 62, 80,
     ])
-  )
-  return new NodeWallet(leakedKp)
-}
+  );
+  return new NodeWallet(leakedKp);
+};
 
 // const LOGS = [
 //   'Program 11111111111111111111111111111111 invoke [1]',
@@ -51,102 +50,92 @@ const createFakeWallet = () => {
 //   'Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success',
 //   'Program ESuQdAjueJSARPYsUZnB7nxbWKEPU8ynkRWLrFrGZsLi consumed 101766 of 200000 compute units',
 //   'Program ESuQdAjueJSARPYsUZnB7nxbWKEPU8ynkRWLrFrGZsLi success',
-// ]
+// ];
 
 const subsFunc = async () => {
-  const connection = new web3.Connection(process.env.RPC_ENDPOINT)
-  const { Provider } = pkg
-  const wallet = createFakeWallet()
-  const provider = new Provider(connection, wallet, null)
+  const connection = new web3.Connection(process.env.RPC_ENDPOINT);
+  const { Provider } = pkg;
+  const wallet = createFakeWallet();
+  const provider = new Provider(connection, wallet, null);
   const programId = new web3.PublicKey(
     'ESuQdAjueJSARPYsUZnB7nxbWKEPU8ynkRWLrFrGZsLi'
-  )
-  const program = returnAnchorProgram(programId, provider)
+  );
+  const program = returnAnchorProgram(programId, provider);
+  const discordClient = await initDiscordClient();
+  const channel = await discordClient.channels.fetch(process.env.CHANNEL_ID);
 
   connection.onLogs(programId, async ({ logs }) => {
     const isApproveLoanByAdmin = !!logs?.find((log) =>
       log.includes('ApproveLoanByAdmin')
-    )
+    );
 
     if (isApproveLoanByAdmin) {
-      const log = logs?.filter((log) => log.startsWith('Program data: '))[1]
+      const log = logs?.filter((log) => log.startsWith('Program data: '))[1];
 
-      if (!log) return
+      if (!log) return;
 
-      const base64Data = log.slice(14)
+      const base64Data = log.slice(14);
 
-      const { data } = program.coder.events.decode(base64Data)
+      const { data } = program.coder.events.decode(base64Data);
 
-      const { nftMint, loanValue, loanToValue, interest } = data
+      if (data) {
+        console.log(data);
+        const { nftMint, loanValue, loanToValue, interest } = data;
 
-      try {
-        const metaData = await getArweaveMetadataByMint([nftMint])
-        const urlImage = Object.values(metaData)[0]?.image
-        const nftName = Object.values(metaData)[0]?.name
+        try {
+          const metaData = await getArweaveMetadataByMint([nftMint]);
+          const urlImage = Object.values(metaData)[0]?.image;
+          const nftName = Object.values(metaData)[0]?.name;
 
-        postTweet(loanValue, loanToValue, interest, urlImage, nftName)
-      } catch (error) {
-        console.log(error)
+          await generateImage(
+            loanValue,
+            loanToValue,
+            interest,
+            urlImage,
+            nftName
+          );
+
+          postTweet(loanValue, loanToValue, interest, urlImage, nftName);
+          postLoansStats(discordClient, channel);
+        } catch (error) {
+          console.log(error);
+        }
       }
     }
-  })
-}
+  });
+};
 
 const postLoansStats = async (discordClient, channel) => {
-  const generate = await generateImage()
-
   try {
-    notifyDiscord.notifyDiscord(discordClient, channel, generate)
+    notifyDiscord(discordClient, channel);
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};
 
-const postTweet = async (
-  loanValue,
-  loanToValue,
-  interest,
-  urlImage,
-  nftName
-) => {
-  await generateImage(loanValue, loanToValue, interest, urlImage, nftName)
-
+const postTweet = async () => {
   const imageData = fs.readFileSync('./image.png', {
     encoding: 'base64',
-  })
+  });
 
   client.post('media/upload', { media: imageData }, (error, media) => {
     if (error) {
-      console.log(error)
+      console.log(error);
     } else {
       const status = {
         status: 'I tweeted from Node.js!',
         media_ids: media.media_id_string,
-      }
+      };
 
       client.post('statuses/update', status, (error) => {
         if (error) {
-          console.log(error)
+          console.log(error);
         } else {
-          console.log('Successfully tweeted an image!')
+          console.log('Successfully tweeted an image!');
         }
-      })
+      });
     }
-  })
-}
+  });
+};
 
-subsFunc()
-// ;(async () => {
-//   try {
-//     const discordClient = await initDiscordClient()
-//     const channel = await discordClient.channels.fetch(process.env.CHANNEL_ID)
-
-//     setInterval(
-//       () => postLoansStats(discordClient, channel),
-//       1000 * INTERVAL_POST
-//     )
-//     // setInterval(() => postTweet(), 10000);
-//   } catch (e) {
-//     console.error(e)
-//   }
-// })()
+subsFunc();

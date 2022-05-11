@@ -1,8 +1,8 @@
-import nodeHtmlToImage from 'node-html-to-image'
-import font2base64 from 'node-font2base64'
-import fs from 'fs'
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
+import nodeHtmlToImage from 'node-html-to-image';
+import font2base64 from 'node-font2base64';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 export const generateImage = async (
   loanValue,
@@ -14,32 +14,32 @@ export const generateImage = async (
   const buffer = await nodeHtmlToImage({
     output: './image.png',
     html: createHTML(loanValue, loanToValue, interest, urlImage, nftName),
-  })
+  });
 
-  return buffer
-}
+  return buffer;
+};
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const oxaniumFontBold = await font2base64.encodeToDataUrl(
   __dirname + '/fonts/Oxanium-ExtraBold.ttf'
-)
+);
 
 const oxaniumFontRegular = await font2base64.encodeToDataUrl(
   __dirname + '/fonts/Oxanium-Regular.ttf'
-)
+);
 
 const oxaniumFontMedium = await font2base64.encodeToDataUrl(
   __dirname + '/fonts/Oxanium-Medium.ttf'
-)
+);
 
 const logoImage = fs.readFileSync(__dirname + '/image/logo.svg', {
   encoding: 'base64',
-})
+});
 
 const bgImage = fs.readFileSync(__dirname + '/image/bg.png', {
   encoding: 'base64',
-})
+});
 
 const createHTML = (loanValue, loanToValue, interest, urlImage, nftName) => `
 <html>
@@ -170,29 +170,29 @@ const createHTML = (loanValue, loanToValue, interest, urlImage, nftName) => `
           </p>
           <p class="data-row">
             <span class="data-title">Loan To Value: </span>${
-              loanToValue.toNumber() / 100
+              loanToValue?.toNumber() / 100 || 0
             }%
           </p>
           <p class="data-row">
             <span class="data-title">Loan Value: </span>${(
-              loanValue.toNumber() / 1e9
+              loanValue?.toNumber() / 1e9 || 0
             ).toFixed(2)} SOL
           </p>
           <p class="data-row">
             <span class="data-title">Interest: </span>${
-              interest.toNumber() / 100
+              interest?.toNumber() / 100 || 0
             }%
           </p>
         </div>
         <div class="name-wrapper">
           <p class="name-title">Nft collateral</p>
           <p class="name">${nftName} | ${
-            loanValue.toNumber() / 1e9 / (loanToValue.toNumber() / 10000)
-          } SOL</p>
+  loanValue?.toNumber() / 1e9 / (loanToValue?.toNumber() / 10000) || 0
+} SOL</p>
         </div>
       </div>
     </div>
   </div>
 </body>
 </html>
-`
+`;
