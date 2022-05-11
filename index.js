@@ -74,33 +74,37 @@ const subsFunc = async () => {
     if (isApproveLoanByAdmin) {
       const log = logs?.filter((log) => log.startsWith('Program data: '))[1];
 
+      console.log(log);
+
       if (!log) return;
 
       const base64Data = log.slice(14);
 
+      console.log(base64Data);
+
       const { data } = program.coder.events.decode(base64Data);
 
-      if (data) {
-        const { nftMint, loanValue, loanToValue, interest } = data;
+      console.log(data);
 
-        try {
-          const metaData = await getArweaveMetadataByMint([nftMint]);
-          const urlImage = Object.values(metaData)[0]?.image;
-          const nftName = Object.values(metaData)[0]?.name;
+      const { nftMint, loanValue, loanToValue, interest } = data;
 
-          await generateImage(
-            loanValue,
-            loanToValue,
-            interest,
-            urlImage,
-            nftName
-          );
+      try {
+        const metaData = await getArweaveMetadataByMint([nftMint]);
+        const urlImage = Object.values(metaData)[0]?.image;
+        const nftName = Object.values(metaData)[0]?.name;
 
-          postTweet(loanValue, loanToValue, interest, urlImage, nftName);
-          notifyDiscord(discordClient, channel);
-        } catch (error) {
-          console.log(error);
-        }
+        await generateImage(
+          loanValue,
+          loanToValue,
+          interest,
+          urlImage,
+          nftName
+        );
+
+        postTweet(loanValue, loanToValue, interest, urlImage, nftName);
+        notifyDiscord(discordClient, channel);
+      } catch (error) {
+        console.log(error);
       }
     }
   });
