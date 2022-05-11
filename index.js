@@ -69,6 +69,8 @@ const subsFunc = async () => {
       log.includes('ApproveLoanByAdmin')
     );
 
+    console.log(isApproveLoanByAdmin);
+
     if (isApproveLoanByAdmin) {
       const log = logs?.filter((log) => log.startsWith('Program data: '))[1];
 
@@ -79,7 +81,6 @@ const subsFunc = async () => {
       const { data } = program.coder.events.decode(base64Data);
 
       if (data) {
-        console.log(data);
         const { nftMint, loanValue, loanToValue, interest } = data;
 
         try {
@@ -96,21 +97,13 @@ const subsFunc = async () => {
           );
 
           postTweet(loanValue, loanToValue, interest, urlImage, nftName);
-          postLoansStats(discordClient, channel);
+          notifyDiscord(discordClient, channel);
         } catch (error) {
           console.log(error);
         }
       }
     }
   });
-};
-
-const postLoansStats = async (discordClient, channel) => {
-  try {
-    notifyDiscord(discordClient, channel);
-  } catch (error) {
-    console.log(error);
-  }
 };
 
 const postTweet = async () => {
@@ -123,7 +116,7 @@ const postTweet = async () => {
       console.log(error);
     } else {
       const status = {
-        status: 'I tweeted from Node.js!',
+        status: '',
         media_ids: media.media_id_string,
       };
 

@@ -187,7 +187,9 @@ const createHTML = (loanValue, loanToValue, interest, urlImage, nftName) => `
         <div class="name-wrapper">
           <p class="name-title">Nft collateral</p>
           <p class="name">${nftName} | ${
-  loanValue?.toNumber() / 1e9 / (loanToValue?.toNumber() / 10000) || 0
+  (loanValue?.toNumber() / 1e9 / (loanToValue?.toNumber() / 10000)).toFixed(
+    2
+  ) || 0
 } SOL</p>
         </div>
       </div>
