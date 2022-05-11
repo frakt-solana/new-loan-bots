@@ -2,7 +2,7 @@ import { generateCardFile, removeCardFile } from './generateCard/index.js'
 import { getArweaveMetadataByMint } from './arweave/index.js'
 import { postTweet } from './postTweet/index.js'
 import { connection, loansProgram, anchorWrappedProgram } from './constants.js'
-import { MOCK_LOGS } from './mocks.js'
+// import { MOCK_LOGS } from './mocks.js'
 import { initDiscord } from './discord/index.js'
 
 const postOnDiscord = await initDiscord()
@@ -88,6 +88,6 @@ const startNewLoansTransactionsListening = async () => {
   console.log('Server is listening')
 }
 
-onProgramLogHanlder({ signature: Date.now()?.toString(), logs: MOCK_LOGS })
-
 startNewLoansTransactionsListening()
+
+// onProgramLogHanlder({ signature: Date.now()?.toString(), logs: MOCK_LOGS })
