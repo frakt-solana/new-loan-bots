@@ -55,10 +55,6 @@ const logoImage = await readFile(__dirname + '/images/logo.svg', {
   encoding: 'base64',
 })
 
-const bgImage = await readFile(__dirname + '/images/bg.png', {
-  encoding: 'base64',
-})
-
 const createHTML = ({
   nftName,
   nftImageUrl,
@@ -68,8 +64,8 @@ const createHTML = ({
   nftPrice,
 }) => `
 <html>
-  <head>
-    <style>
+<head>
+  <style>
     @font-face {
       font-family: "Oxanium-extra-bold";
       src: url(${oxaniumFontBold}) format('woff2');
@@ -84,110 +80,112 @@ const createHTML = ({
     }
 
     * {
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-  }
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
 
-  body {
-    width: 1200px;
-    height: 675px;
-    color: #fff;
-    font-family: "Oxanium-regular";
-    font-size: 16px;
-  }
+    body {
+      color: #fff;
+      font-family: "Oxanium-regular";
+      font-size: 16px;
+      width: 1200px;
+      height: 675px;
+    }
 
-  .wrapper {
-    width: 1200px;
-    height: 675px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: no-repeat center url('data:image/png;base64, ${bgImage}');
-    background-size: cover;
-  }
+    .wrapper {
+      width: 1200px;
+      height: 675px;
+      background-color: #191919;
+      padding: 80px;
+    }
 
-  .card {
-    width: 1000px;
-    height: 475px;
-    border: 1px solid #4d4d4d;
-    background: #191919;
-    border-radius: 30px;
-    overflow: hidden;
-    display: flex;
-    padding: 30px;
-  }
+    .card {
+      width: 100%;
+      height: 100%;
+      border-radius: 30px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
 
-  .image {
-    width: 415px;
-    height: 415px;
-    margin-right: 30px;
-    background-image: url('${nftImageUrl}');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
+    .image {
+      width: 515px;
+      height: 515px;
+      margin-right: 30px;
+      background-image: url('${nftImageUrl}');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      border-radius: 30px;
+    }
 
-  .frakt-logo {
-    height: 30px;
-    margin-bottom: 30px;
-  }
+    .info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      height: 100%;
+    }
 
-  .title {
-    font-family: Oxanium-extra-bold;
-    text-transform: uppercase;
-    font-size: 70px;
-    color: #5d5fef;
-    line-height: 80%;
-    margin-bottom: 30px;
-  }
+    .frakt-logo {
+      height: 30px;
+      margin-top: 10px;
+      margin-bottom: 30px;
+    }
 
-  .data-row {
-    color: white;
-    font-size: 24px;
-    margin-bottom: 20px;
-    line-height: 80%;
-  }
+    .title {
+      font-family: Oxanium-extra-bold;
+      text-transform: uppercase;
+      font-size: 92px;
+      color: #5d5fef;
+      line-height: 80%;
+      margin-bottom: 30px;
+    }
 
-  .data-row:last-child {
-    margin-bottom: 25px;
-  }
+    .data-row {
+      color: white;
+      font-size: 44px;
+      margin-bottom: 20px;
+      line-height: 80%;
+    }
 
-  .data-title {
-    font-size: 24px;
-    color: #4d4d4d;
-    font-family: "Oxanium-extra-bold";
-  }
+    .data-title {
+      font-family: "Oxanium-extra-bold";
+      text-transform: capitalize;
+    }
 
-  .name-wrapper {
-    width: 100%;
-    height: 100px;
-    border-top: 1px solid #5d5fef;
-    background: linear-gradient(90deg,
-        rgba(93, 95, 239, 0.6) 0%,
-        rgba(93, 95, 239, 0) 100%);
-    padding: 20px;
-    line-height: 30px;
-  }
+    .name-wrapper {
+      flex: 1;
+      width: 100%;
+      border-top: 1px solid #5d5fef;
+      background: linear-gradient(90deg,
+          rgba(93, 95, 239, 0.6) 0%,
+          rgba(93, 95, 239, 0) 100%);
+      padding: 20px;
+      border-radius: 0 0 0 30px;
+    }
 
-  .name-title {
-    text-transform: uppercase;
-    font-size: 24px;
-    font-family: "Oxanium-extra-bold";
-  }
+    .name-title {
+      font-family: "Oxanium-extra-bold";
+      text-transform: uppercase;
+      font-size: 36px;
+      line-height: 45px;
+    }
 
-  .name {
-    font-family: "Oxanium-medium";
-    font-size: 24px;
-  }
-</style>
+    .name {
+      font-family: "Oxanium-medium";
+      font-size: 26px;
+      line-height: 32px;
+    }
+  </style>
 </head>
+
 <body>
-<div class="wrapper">
+  <div class="wrapper">
     <div class="card">
       <div class="image"></div>
       <div class="info">
-        <img class="frakt-logo" src="data:image/svg+xml;base64, ${logoImage}" />
+        <img src="data:image/svg+xml;base64, ${logoImage}" class="frakt-logo" />
         <h1 class="title">New loan</h1>
         <div class="data">
           <p class="data-row">
