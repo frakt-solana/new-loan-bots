@@ -8,7 +8,7 @@ import {
   generateCardFile,
   removeCardFile,
   generateCardFilePath,
-  checkCardFileExistance,
+  // checkCardFileExistance,
 } from './generateCard/index.js'
 import { getArweaveMetadataByMint } from './arweave/index.js'
 import { postTweet } from './twitter/index.js'
@@ -20,6 +20,10 @@ const app = express()
 app.use(cors())
 app.use(bodyParser.json())
 
+const processedLoans = {
+  value: [],
+}
+
 app.post('/new-loan', async (req, res) => {
   try {
     const {
@@ -29,12 +33,12 @@ app.post('/new-loan', async (req, res) => {
       interest: rawInterest,
     } = req.body
 
-    const isCardFileExist = await checkCardFileExistance(nftMint)
-
-    if (isCardFileExist) {
+    if (processedLoans.value.includes(nftMint)) {
       console.log(`This loan was already processed in last 10 min`)
       return res.send('This loan was already processed in last 10 min')
     }
+
+    processedLoans.value = [...processedLoans.value, nftMint]
 
     const loanToValue = rawLoanToValue / 100 || 0
     const loanValue = rawLoanValue / 1e9 || 0
@@ -83,7 +87,7 @@ app.post('/new-loan', async (req, res) => {
     })
     await postOnDiscord(cardFilePath)
 
-    removeCardFile(nftMint, 10 * 60 * 1000)
+    removeCardFile(nftMint, processedLoans, 10 * 60 * 1000)
 
     res.send('Success')
   } catch (error) {

@@ -1,6 +1,6 @@
 import nodeHtmlToImage from 'node-html-to-image'
 import font2base64 from 'node-font2base64'
-import { unlink as removeFile, readFile, stat } from 'fs/promises'
+import { unlink as removeFile, readFile } from 'fs/promises'
 
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
@@ -8,15 +8,11 @@ export const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export const generateCardFilePath = (id) => `${__dirname}/cards/card_${id}.png`
 
-export const checkCardFileExistance = async (id) => {
-  const fullPath = generateCardFilePath(id)
-  return !!(await stat(fullPath).catch(() => false))
-}
-
-export const removeCardFile = async (id, delay = 0) => {
+export const removeCardFile = async (id, processedLoans, delay = 0) => {
   try {
     await new Promise((resolve) => setTimeout(resolve, delay))
 
+    processedLoans.value = processedLoans.value.filter((mint) => mint === id)
     await removeFile(generateCardFilePath(id))
 
     console.log(`card_${id}.png removed`)
