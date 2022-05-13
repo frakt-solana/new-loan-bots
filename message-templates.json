@@ -1,0 +1,9 @@
+[
+  "You thought JPEG's were illiquid? No way, José. Proof is {nftName} just unlocked an instant {loanValue} SOL loan, at {loanToValue}% TVL",
+  "Wow that was smooth. A {period} days loan for {loanValue} SOL was issued on {nftName}, in less than a minute. Ez squeezy.",
+  "Someone just banked on a {nftCollectionName} by taking out a {period} days, {loanValue} SOL loan. Not bad eh?",
+  "One {nftCollectionName} was just put to good use by backing a {loanValue} SOL loan for {period} days. Now that's what I call utility!",
+  "Aaaaah I'm loaning. {nftName} at {loanToValue}% TVL for {period} days. That's {loanValue} SOL. Aaaaaah I'm collateralizing.",
+  "{nftName} just felt that warm, fuzzy feeling inside when it was {loanToValue}% collateralized to back a {loanValue} SOL loan.",
+  "Instead of just standing there, {nftName} made us proud by backing a {period} days, {loanValue} SOL loan. Well done!"
+]
