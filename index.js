@@ -1,49 +1,31 @@
+import express from 'express'
+import bodyParser from 'body-parser'
+import cors from 'cors'
+
 import { generateCardFile, removeCardFile } from './generateCard/index.js'
 import { getArweaveMetadataByMint } from './arweave/index.js'
 import { postTweet } from './twitter/index.js'
-import { connection, loansProgram, anchorWrappedProgram } from './constants.js'
 // import { MOCK_LOGS } from './mocks.js'
 import { initDiscord } from './discord/index.js'
 
 const postOnDiscord = await initDiscord()
 
-const onProgramLogHanlder = async ({ signature, logs }) => {
+const app = express()
+app.use(cors())
+app.use(bodyParser.json())
+
+app.post('/new-loan', async (req, res) => {
   try {
-    console.log('Some transaction happened')
-    console.log(`Transaction signature: ${signature}`)
-
-    const isApproveLoanByAdminLogs = !!logs?.find((log) =>
-      log.includes('ApproveLoanByAdmin')
-    )
-
-    if (!isApproveLoanByAdminLogs) {
-      console.log('Not ApproveLoanByAdmin transaction')
-      return
-    }
-
-    console.log('ApproveLoanByAdmin transaction')
-
-    const logWithBase64Data =
-      logs?.filter((log) => log?.startsWith('Program data: '))?.[1] || null
-
-    if (!logWithBase64Data) {
-      console.log("Can't get data from logs")
-      return
-    }
-
-    const base64Data = logWithBase64Data.slice(14)
-    const { data } = anchorWrappedProgram.coder.events.decode(base64Data)
-
     const {
       nftMint,
       loanToValue: rawLoanToValue,
       loanValue: rawLoanValue,
       interest: rawInterest,
-    } = data
+    } = req.body
 
-    const loanToValue = rawLoanToValue?.toNumber() / 100 || 0
-    const loanValue = rawLoanValue?.toNumber() / 1e9 || 0
-    const interest = rawInterest?.toNumber() / 100 || 0
+    const loanToValue = rawLoanToValue / 100 || 0
+    const loanValue = rawLoanValue / 1e9 || 0
+    const interest = rawInterest / 100 || 0
     const nftPrice = loanValue / (loanToValue / 100)
     const period = 7
 
@@ -66,7 +48,7 @@ const onProgramLogHanlder = async ({ signature, logs }) => {
       nftPrice: nftPrice.toFixed(2),
     })
 
-    const { cardFileName, fullPath } = await generateCardFile(signature, {
+    const { cardFileName, fullPath } = await generateCardFile(nftMint, {
       nftName,
       nftImageUrl,
       period: period.toString(),
@@ -86,21 +68,16 @@ const onProgramLogHanlder = async ({ signature, logs }) => {
     })
     await postOnDiscord(fullPath)
 
-    await removeCardFile(signature)
+    await removeCardFile(nftMint)
 
     console.log(`${cardFileName} removed`)
+
+    res.send('POST request to the homepage')
   } catch (error) {
     console.error(error)
   }
-}
+})
 
-const startNewLoansTransactionsListening = async () => {
-  connection.onLogs(loansProgram, onProgramLogHanlder)
-
+app.listen(8080, function () {
   console.log('Server is listening')
-}
-
-startNewLoansTransactionsListening()
-
-//? For testing
-// onProgramLogHanlder({ signature: Date.now()?.toString(), logs: MOCK_LOGS })
+})
