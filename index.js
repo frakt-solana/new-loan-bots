@@ -1,6 +1,8 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
+import dotenv from 'dotenv'
+dotenv.config()
 
 import {
   generateCardFile,
@@ -17,8 +19,6 @@ const postOnDiscord = await initDiscord()
 const app = express()
 app.use(cors())
 app.use(bodyParser.json())
-
-const CARD_IMAGE_DESTROY_TIME = 10 * 60 * 1000
 
 app.post('/new-loan', async (req, res) => {
   try {
@@ -83,7 +83,7 @@ app.post('/new-loan', async (req, res) => {
     })
     await postOnDiscord(cardFilePath)
 
-    removeCardFile(nftMint, CARD_IMAGE_DESTROY_TIME)
+    removeCardFile(nftMint, 10 * 60 * 1000)
 
     res.send('Success')
   } catch (error) {
@@ -94,5 +94,5 @@ app.post('/new-loan', async (req, res) => {
 })
 
 app.listen(8080, function () {
-  console.log('Server is listening')
+  console.log(`Server is listening on port ${process.env.PORT || 8080}`)
 })
