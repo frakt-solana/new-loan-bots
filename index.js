@@ -2,7 +2,12 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 
-import { generateCardFile, removeCardFile } from './generateCard/index.js'
+import {
+  generateCardFile,
+  removeCardFile,
+  generateCardFilePath,
+  checkCardFileExistance,
+} from './generateCard/index.js'
 import { getArweaveMetadataByMint } from './arweave/index.js'
 import { postTweet } from './twitter/index.js'
 import { initDiscord } from './discord/index.js'
@@ -13,6 +18,8 @@ const app = express()
 app.use(cors())
 app.use(bodyParser.json())
 
+const CARD_IMAGE_DESTROY_TIME = 10 * 60 * 1000
+
 app.post('/new-loan', async (req, res) => {
   try {
     const {
@@ -21,6 +28,13 @@ app.post('/new-loan', async (req, res) => {
       loanValue: rawLoanValue,
       interest: rawInterest,
     } = req.body
+
+    const isCardFileExist = await checkCardFileExistance(nftMint)
+
+    if (isCardFileExist) {
+      console.log(`This loan was already processed in last 10 min`)
+      return res.send('This loan was already processed in last 10 min')
+    }
 
     const loanToValue = rawLoanToValue / 100 || 0
     const loanValue = rawLoanValue / 1e9 || 0
@@ -47,7 +61,9 @@ app.post('/new-loan', async (req, res) => {
       nftPrice: nftPrice.toFixed(2),
     })
 
-    const { cardFileName, fullPath } = await generateCardFile(nftMint, {
+    const cardFilePath = generateCardFilePath(nftMint)
+
+    await generateCardFile(nftMint, {
       nftName,
       nftImageUrl,
       period: period.toString(),
@@ -58,20 +74,18 @@ app.post('/new-loan', async (req, res) => {
     })
 
     await postTweet({
-      fullPathToCardImage: fullPath,
+      fullPathToCardImage: cardFilePath,
       nftName,
       nftCollectionName,
       period,
       loanToValue,
       loanValue,
     })
-    await postOnDiscord(fullPath)
+    await postOnDiscord(cardFilePath)
 
-    await removeCardFile(nftMint)
+    removeCardFile(nftMint, CARD_IMAGE_DESTROY_TIME)
 
-    console.log(`${cardFileName} removed`)
-
-    res.send('Posted successfully')
+    res.send('Success')
   } catch (error) {
     console.error(error)
     res.statusCode = 503

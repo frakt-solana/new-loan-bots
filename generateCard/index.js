@@ -1,22 +1,36 @@
 import nodeHtmlToImage from 'node-html-to-image'
 import font2base64 from 'node-font2base64'
-import { unlink as removeFile, readFile } from 'fs/promises'
+import { unlink as removeFile, readFile, stat } from 'fs/promises'
 
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 export const __dirname = dirname(fileURLToPath(import.meta.url))
 
-export const removeCardFile = async (signature) => {
-  await removeFile(`${__dirname}/cards/card_${signature}.png`)
+export const generateCardFilePath = (id) => `${__dirname}/cards/card_${id}.png`
+
+export const checkCardFileExistance = async (id) => {
+  const fullPath = generateCardFilePath(id)
+  return !!(await stat(fullPath).catch(() => false))
+}
+
+export const removeCardFile = async (id, delay = 0) => {
+  try {
+    await new Promise((resolve) => setTimeout(resolve, delay))
+
+    await removeFile(generateCardFilePath(id))
+
+    console.log(`card_${id}.png removed`)
+  } catch (error) {
+    console.error('Error removing card', error)
+  }
 }
 
 export const generateCardFile = async (
-  signature,
+  id,
   { nftName, nftImageUrl, period, loanToValue, loanValue, interest, nftPrice }
 ) => {
   try {
-    const cardFileName = `card_${signature}.png`
-    const fullPath = `${__dirname}/cards/${cardFileName}`
+    const fullPath = generateCardFilePath(id)
 
     await nodeHtmlToImage({
       puppeteerArgs: { args: ['--no-sandbox', '--disable-setuid-sandbox'] },
@@ -32,11 +46,12 @@ export const generateCardFile = async (
       }),
     })
 
-    console.log(`${cardFileName} generated`)
+    console.log(`card_${id}.png generated`)
 
-    return { cardFileName, fullPath }
+    return true
   } catch (error) {
     console.error('Generate image error', error)
+    return false
   }
 }
 
