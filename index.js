@@ -72,9 +72,11 @@ app.post('/new-loan', async (req, res) => {
 
     console.log(`${cardFileName} removed`)
 
-    res.send('POST request to the homepage')
+    res.send('Posted successfully')
   } catch (error) {
     console.error(error)
+    res.statusCode = 503
+    res.send('Oh shit!')
   }
 })
 
