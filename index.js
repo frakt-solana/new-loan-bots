@@ -5,7 +5,6 @@ import cors from 'cors'
 import { generateCardFile, removeCardFile } from './generateCard/index.js'
 import { getArweaveMetadataByMint } from './arweave/index.js'
 import { postTweet } from './twitter/index.js'
-// import { MOCK_LOGS } from './mocks.js'
 import { initDiscord } from './discord/index.js'
 
 const postOnDiscord = await initDiscord()
