@@ -9,7 +9,7 @@ export const initDiscord = () => {
 
   return new Promise((resolve, reject) => {
     client.on('ready', () => {
-      console.log(`Logged in as ${client.user?.tag}!`)
+      console.log(`Discord logged in as ${client.user?.tag}`)
       client.channels
         .fetch(process.env.DISCORD_CHANNEL_ID)
         .then((channel) => {
