@@ -12,7 +12,7 @@ export const removeCardFile = async (signature) => {
 
 export const generateCardFile = async (
   signature,
-  { nftName, nftImageUrl, loanToValue, loanValue, interest, nftPrice }
+  { nftName, nftImageUrl, period, loanToValue, loanValue, interest, nftPrice }
 ) => {
   try {
     const cardFileName = `card_${signature}.png`
@@ -24,6 +24,7 @@ export const generateCardFile = async (
       html: createHTML({
         nftName,
         nftImageUrl,
+        period,
         loanToValue,
         loanValue,
         interest,
@@ -58,6 +59,7 @@ const logoImage = await readFile(__dirname + '/images/logo.svg', {
 const createHTML = ({
   nftName,
   nftImageUrl,
+  period,
   loanToValue,
   loanValue,
   interest,
@@ -189,7 +191,7 @@ const createHTML = ({
         <h1 class="title">New loan</h1>
         <div class="data">
           <p class="data-row">
-            <span class="data-title">Period: </span>7 days
+            <span class="data-title">Period: </span>${period} days
           </p>
           <p class="data-row">
             <span class="data-title">Loan To Value: </span>${loanToValue}%

@@ -11,7 +11,7 @@ export const initDiscord = () => {
     client.on('ready', () => {
       console.log(`Logged in as ${client.user?.tag}!`)
       client.channels
-        .fetch(process.env.CHANNEL_ID)
+        .fetch(process.env.DISCORD_CHANNEL_ID)
         .then((channel) => {
           resolve(createPostOnDiscordFunction({ channel, client }))
         })

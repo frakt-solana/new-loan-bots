@@ -1,6 +1,6 @@
 import { generateCardFile, removeCardFile } from './generateCard/index.js'
 import { getArweaveMetadataByMint } from './arweave/index.js'
-import { postTweet } from './postTweet/index.js'
+import { postTweet } from './twitter/index.js'
 import { connection, loansProgram, anchorWrappedProgram } from './constants.js'
 // import { MOCK_LOGS } from './mocks.js'
 import { initDiscord } from './discord/index.js'
@@ -45,17 +45,21 @@ const onProgramLogHanlder = async ({ signature, logs }) => {
     const loanValue = rawLoanValue?.toNumber() / 1e9 || 0
     const interest = rawInterest?.toNumber() / 100 || 0
     const nftPrice = loanValue / (loanToValue / 100)
+    const period = 7
 
     const nftMetadataByMint = await getArweaveMetadataByMint([nftMint])
     const metadata = nftMetadataByMint[nftMint]
 
     const nftImageUrl = metadata?.image || ''
     const nftName = metadata?.name || ''
+    const nftCollectionName = metadata?.collection?.name || ''
 
     console.log('Loan data: ', {
       nftMint,
       nftName,
       nftImageUrl,
+      nftCollectionName,
+      period: period.toString(),
       loanToValue: loanToValue.toString(),
       loanValue: loanValue.toFixed(3),
       interest: interest.toString(),
@@ -65,13 +69,21 @@ const onProgramLogHanlder = async ({ signature, logs }) => {
     const { cardFileName, fullPath } = await generateCardFile(signature, {
       nftName,
       nftImageUrl,
+      period: period.toString(),
       loanToValue: loanToValue.toString(),
       loanValue: loanValue.toFixed(3),
       interest: interest.toString(),
       nftPrice: nftPrice.toFixed(2),
     })
 
-    await postTweet(fullPath)
+    await postTweet({
+      fullPathToCardImage: fullPath,
+      nftName,
+      nftCollectionName,
+      period,
+      loanToValue,
+      loanValue,
+    })
     await postOnDiscord(fullPath)
 
     await removeCardFile(signature)
@@ -90,4 +102,5 @@ const startNewLoansTransactionsListening = async () => {
 
 startNewLoansTransactionsListening()
 
+//? For testing
 // onProgramLogHanlder({ signature: Date.now()?.toString(), logs: MOCK_LOGS })
