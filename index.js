@@ -8,7 +8,6 @@ import {
   generateCardFile,
   removeCardFile,
   generateCardFilePath,
-  // checkCardFileExistance,
 } from './generateCard/index.js'
 import { getArweaveMetadataByMint } from './arweave/index.js'
 import { postTweet } from './twitter/index.js'
@@ -40,11 +39,13 @@ app.post('/new-loan', async (req, res) => {
 
     processedLoans.value = [...processedLoans.value, nftMint]
 
-    const loanToValue = rawLoanToValue / 100 || 0
-    const loanValue = rawLoanValue / 1e9 || 0
-    const interest = rawInterest / 100 || 0
-    const nftPrice = loanValue / (loanToValue / 100)
-    const period = 7
+    const loanToValueNumber = rawLoanToValue / 100 || 0
+    const loanToValue = loanToValueNumber.toString()
+    const loanValueNumber = rawLoanValue / 1e9 || 0
+    const loanValue = loanValueNumber.toFixed(3)
+    const interest = (rawInterest / 100 || 0).toString()
+    const nftPrice = (loanValue / (loanToValue / 100)).toFixed(2)
+    const period = '7'
 
     const nftMetadataByMint = await getArweaveMetadataByMint([nftMint])
     const metadata = nftMetadataByMint[nftMint]
@@ -58,11 +59,11 @@ app.post('/new-loan', async (req, res) => {
       nftName,
       nftImageUrl,
       nftCollectionName,
-      period: period.toString(),
-      loanToValue: loanToValue.toString(),
-      loanValue: loanValue.toFixed(3),
-      interest: interest.toString(),
-      nftPrice: nftPrice.toFixed(2),
+      period,
+      loanToValue,
+      loanValue,
+      interest,
+      nftPrice: nftPrice,
     })
 
     const cardFilePath = generateCardFilePath(nftMint)
@@ -70,11 +71,11 @@ app.post('/new-loan', async (req, res) => {
     await generateCardFile(nftMint, {
       nftName,
       nftImageUrl,
-      period: period.toString(),
-      loanToValue: loanToValue.toString(),
-      loanValue: loanValue.toFixed(3),
-      interest: interest.toString(),
-      nftPrice: nftPrice.toFixed(2),
+      period,
+      loanToValue,
+      loanValue,
+      interest,
+      nftPrice,
     })
 
     await postTweet({
