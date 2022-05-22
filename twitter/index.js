@@ -68,7 +68,7 @@ const generateTwitterPostText = async ({
     const messageTemplates = nftCollectionName
       ? allMessageTemplates
       : allMessageTemplates.filter((message) =>
-          message.includes('{nftCollectionName}')
+          !message.includes('{nftCollectionName}')
         )
 
     //? Get random item from array of templates
