@@ -2,7 +2,6 @@ import { getMeta } from './lib.js'
 import { BinaryReader, BinaryWriter } from 'borsh'
 import { PublicKey } from '@solana/web3.js'
 import base58 from 'bs58'
-
 ;(() => {
   BinaryReader.prototype.readPubkey = function () {
     const reader = this
@@ -28,10 +27,7 @@ import base58 from 'bs58'
 })()
 
 export const getArweaveMetadataByMint = async (tokenMints) => {
-  const rawMeta = await getMeta(
-    tokenMints,
-    'https://wild-red-morning.solana-mainnet.quiknode.pro/e48180a05f9f7ab63b6d9f0609f0ba675854e471/'
-  )
+  const rawMeta = await getMeta(tokenMints, process.env.RPC_ENDPOINT)
 
   const metadataByMint =
     rawMeta?.reduce((acc, { mint, metadata, tokenData }) => {
