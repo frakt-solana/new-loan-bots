@@ -157,7 +157,7 @@ const createHTML = ({
 
     .data-row {
       color: white;
-      font-size: 44px;
+      font-size: 40px;
       margin-bottom: 20px;
       line-height: 80%;
     }
