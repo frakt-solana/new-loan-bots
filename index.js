@@ -30,6 +30,7 @@ app.post('/new-loan', async (req, res) => {
       loanToValue: rawLoanToValue,
       loanValue: rawLoanValue,
       interest: rawInterest,
+      period: rawPeriod,
     } = req.body
 
     if (processedLoans.value.includes(nftMint)) {
@@ -45,7 +46,7 @@ app.post('/new-loan', async (req, res) => {
     const loanValue = loanValueNumber.toFixed(3)
     const interest = (rawInterest / 100 || 0).toString()
     const nftPrice = (loanValue / (loanToValue / 100)).toFixed(2)
-    const period = '7'
+    const period = rawPeriod ? rawPeriod.toString() : '7'
 
     const nftMetadataByMint = await getArweaveMetadataByMint([nftMint])
     const metadata = nftMetadataByMint[nftMint]
@@ -65,6 +66,11 @@ app.post('/new-loan', async (req, res) => {
       interest,
       nftPrice: nftPrice,
     })
+
+    if (!nftImageUrl || !nftName) {
+      console.log(`This nft has broken metadata`)
+      return res.send('This nft has broken metadata')
+    }
 
     const cardFilePath = generateCardFilePath(nftMint)
 
