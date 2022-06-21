@@ -20,6 +20,7 @@ export const postTweet = async ({
   period,
   loanToValue,
   loanValue,
+  loansType,
 }) => {
   try {
     const imageData = await readFile(fullPathToCardImage, {
@@ -32,6 +33,7 @@ export const postTweet = async ({
       period,
       loanToValue,
       loanValue,
+      loansType,
     })
 
     const { data: mediaUploadData } = await client.post('media/upload', {
@@ -58,30 +60,38 @@ const generateTwitterPostText = async ({
   period,
   loanToValue,
   loanValue,
+  loansType,
 }) => {
   try {
     const allMessageTemplates = await (
       await fetch(MESSAGE_TEMPLATES_JSON_URL)
     ).json()
 
-    //? If nft doesn't have collectionName, than filter out messageTemplates that include collectionName
-    const messageTemplates = nftCollectionName
-      ? allMessageTemplates
-      : allMessageTemplates.filter((message) =>
-          !message.includes('{nftCollectionName}')
-        )
+    // const allTwitterTags = 
 
-    //? Get random item from array of templates
-    const message =
-      messageTemplates?.[Math.floor(Math.random() * messageTemplates.length)] ||
-      ''
+    // const tag = twitterTags.filter(
+    //   ({ collectionName }) => collectionName === 'Pawnshop Gnomies'
+    // )[0].tag
 
+    let message = ''
+
+    const messageByCollectionName =
+      allMessageTemplates[nftCollectionName][loansType]
+
+    if (messageByCollectionName) {
+      message = getRandomMessage(messageByCollectionName)
+    } else {
+      const messageTemplate = allMessageTemplates['defaultMessages']
+      message = geRandomMessage(messageTemplate)
+    }
+    
     return message
       .replace('{nftName}', nftName)
       .replace('{nftCollectionName}', nftCollectionName)
       .replace('{period}', period)
       .replace('{loanToValue}', loanToValue)
       .replace('{loanValue}', loanValue)
+      // .replace('{tag}', tag)
   } catch (error) {
     console.error('Error generating twitter text', error)
     return ''
