@@ -1,9 +1,10 @@
 import nodeHtmlToImage from 'node-html-to-image'
 import font2base64 from 'node-font2base64'
 import { unlink as removeFile, readFile } from 'fs/promises'
-
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
+import { SHORT_TERM } from '../index.js'
+
 export const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export const generateCardFilePath = (id) => `${__dirname}/cards/card_${id}.png`
@@ -23,7 +24,7 @@ export const removeCardFile = async (id, processedLoans, delay = 0) => {
 
 export const generateCardFile = async (
   id,
-  { nftName, nftImageUrl, period, loanToValue, loanValue, interest, nftPrice }
+  { nftName, nftImageUrl, period, loanToValue, loanValue, interest, nftPrice, loansType }
 ) => {
   try {
     const fullPath = generateCardFilePath(id)
@@ -39,6 +40,7 @@ export const generateCardFile = async (
         loanValue,
         interest,
         nftPrice,
+        loansType,
       }),
     })
 
@@ -75,6 +77,7 @@ const createHTML = ({
   loanValue,
   interest,
   nftPrice,
+  loansType
 }) => `
 <html>
 <head>
@@ -168,6 +171,7 @@ const createHTML = ({
     }
 
     .name-wrapper {
+      margin-top: ${loansType === SHORT_TERM ? '0' : '45px'};
       flex: 1;
       width: 100%;
       border-top: 1px solid #5d5fef;
@@ -201,9 +205,11 @@ const createHTML = ({
         <img src="data:image/svg+xml;base64, ${logoImage}" class="frakt-logo" />
         <h1 class="title">New loan</h1>
         <div class="data">
-          <p class="data-row">
+        ${loansType === SHORT_TERM ? (
+          `<p class="data-row">
             <span class="data-title">Period: </span>${period} days
-          </p>
+          </p>`
+        ) : ''}
           <p class="data-row">
             <span class="data-title">Loan To Value: </span>${loanToValue}%
           </p>
