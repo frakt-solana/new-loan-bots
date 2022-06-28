@@ -2,7 +2,9 @@ import Twit from 'twit'
 import { readFile } from 'fs/promises'
 import fetch from 'node-fetch'
 import dotenv from 'dotenv'
-dotenv.config()
+import { LONG_TERM } from '../index.js'
+import { getRandomMessage } from '../helpers.js'
+dotenv.config();
 
 const twitConfig = {
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
@@ -74,10 +76,14 @@ const generateTwitterPostText = async ({
           (message) => !message.includes('{nftCollectionName}')
         )
 
-    //? Get random item from array of templates
+    const messageTemplatesForLoanTerm = allMessageTemplates.filter(
+      (message) => !message.includes('{period}')
+    )
+
     const message =
-      messageTemplates?.[Math.floor(Math.random() * messageTemplates.length)] ||
-      ''
+      loansType === LONG_TERM
+        ? getRandomMessage(messageTemplatesForLoanTerm)
+        : getRandomMessage(messageTemplates)
 
     return message
       .replace('{nftName}', nftName)
