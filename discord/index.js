@@ -1,49 +1,60 @@
-import { Client, Intents } from 'discord.js'
-import dotenv from 'dotenv'
-dotenv.config()
+import { Client, Intents } from "discord.js";
+import nodeFetch from "node-fetch";
+import dotenv from "dotenv";
+dotenv.config();
 
-export const initDiscord = () => {
-  const client = new Client({
-    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
-  })
+const client = new Client({
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.DIRECT_MESSAGES,
+  ],
+});
 
-  return new Promise((resolve, reject) => {
-    client.on('ready', () => {
-      console.log(`Discord logged in as ${client.user?.tag}`)
-      client.channels
-        .fetch(process.env.DISCORD_CHANNEL_ID)
-        .then((channel) => {
-          resolve(createPostOnDiscordFunction({ channel, client }))
-        })
-        .catch((error) => {
-          console.error('Discord login error, ', error)
-          reject(error)
-        })
-    })
+export const initDiscord = async () => {
+  client.on("ready", async () => {
+    console.log(`Discord logged in as ${client.user?.tag}`);
+  });
 
-    client.login(process.env.DISCORD_TOKEN)
-  })
-}
+  await client.login(process.env.DISCORD_TOKEN);
 
-const createPostOnDiscordFunction =
-  ({ client, channel }) =>
-  async (fullPathToCardImage) => {
-    try {
-      if (!client.isReady()) {
-        return
-      }
+  return client;
+};
 
-      await channel.send({
-        files: [
-          {
-            attachment: fullPathToCardImage,
-            name: 'image.png',
-          },
-        ],
-      })
-
-      console.log('Posted on Discord successfully')
-    } catch (error) {
-      console.error('Post on discord channel failed ', error)
-    }
+export const createPostOnDiscordFunction = async (fullPathToCardImage) => {
+  if (!client.isReady()) {
+    return;
   }
+
+  const channel = await client.channels.fetch(process.env.DISCORD_CHANNEL_ID);
+
+  try {
+    await channel.send({
+      files: [
+        {
+          attachment: fullPathToCardImage,
+          name: "image.png",
+        },
+      ],
+    });
+
+    console.log("Posted on Discord successfully");
+  } catch (error) {
+    console.error("Post on discord channel failed ", error);
+  }
+};
+
+export const sendDiscordMessage = async (userId, message) => {
+  const user = await client.users.fetch(userId);
+
+  user.send(message);
+};
+
+export const getDiscordId = async (publicKey) => {
+  const userRes = await nodeFetch(
+    `https://fraktion-monorep.herokuapp.com/user/${publicKey}`
+  );
+  const userData = await userRes.json();
+
+  return userData?.discordId;
+};
