@@ -1,21 +1,29 @@
 import { MessageEmbed } from "discord.js";
 
-const exampleEmbed = new MessageEmbed()
-	.setColor('#0099ff')
-	.setTitle('Some title')
-	.setURL('https://discord.js.org/')
-	.setAuthor({ name: 'Some name', iconURL: 'https://i.imgur.com/AfFp7pu.png', url: 'https://discord.js.org' })
-	.setDescription('Some description here')
-	.setThumbnail('https://i.imgur.com/AfFp7pu.png')
-	.addFields(
-		{ name: 'Regular field title', value: 'Some value here' },
-		{ name: '\u200B', value: '\u200B' },
-		{ name: 'Inline field title', value: 'Some value here', inline: true },
-		{ name: 'Inline field title', value: 'Some value here', inline: true },
-	)
-	.addField('Inline field title', 'Some value here', true)
-	.setImage('https://i.imgur.com/AfFp7pu.png')
-	.setTimestamp()
-	.setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
+export const buildAlertEmbed = ({ metadata, loan }) => {
+  let dueAt = new Date(loan.expiredAt * 1000)
+  let nowTime = new Date()
 
-channel.send({ embeds: [exampleEmbed] });
+  const dueHours = Math.floor((dueAt - nowTime) / 1000 / 60 / 60) + 48
+
+  return new MessageEmbed()
+    .setColor("#D0342C")
+    .setTitle("Liquidation Alert")
+    .setURL("https://frakt.xyz/loans")
+    .setAuthor({
+      name: "Frakt",
+      iconURL:
+        "https://cdn.discordapp.com/avatars/983383827235872799/84f7c27d2ba6e32873637063e6e2ccea.png?size=2048",
+      url: "https://frakt.xyz/",
+    })
+    .setDescription(metadata.name + ` will be liquidated in ${dueHours} hours if not repaid!`)
+    .setThumbnail(
+      "https://cdn.discordapp.com/avatars/983383827235872799/84f7c27d2ba6e32873637063e6e2ccea.png?size=2048"
+    )
+    .addFields(
+      { name: "Loan Due By", value: dueAt.toUTCString() },
+      { name: '\u200b', value: "https://frakt.xyz/loans" },
+    )
+    .setImage(metadata.image)
+    .setTimestamp();
+};

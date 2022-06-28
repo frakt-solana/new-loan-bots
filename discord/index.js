@@ -21,7 +21,7 @@ export const initDiscord = async () => {
   return client;
 };
 
-export const createPostOnDiscordFunction = async (fullPathToCardImage) => {
+export const createPostOnDiscordChannel = async (fullPathToCardImage) => {
   if (!client.isReady()) {
     return;
   }
@@ -44,10 +44,10 @@ export const createPostOnDiscordFunction = async (fullPathToCardImage) => {
   }
 };
 
-export const sendDiscordMessage = async (userId, message) => {
+export const sendUserMessage = async (userId, message) => {
   const user = await client.users.fetch(userId);
 
-  user.send(message);
+  return user.send({ embeds: [message] });
 };
 
 export const getDiscordId = async (publicKey) => {

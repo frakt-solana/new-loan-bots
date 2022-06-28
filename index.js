@@ -12,15 +12,15 @@ import { getArweaveMetadataByMint } from "./arweave/index.js";
 // import { postTweet } from './twitter/index.js'
 import {
   getDiscordId,
-  sendDiscordMessage,
+  sendUserMessage,
   initDiscord,
-  createPostOnDiscordFunction
+  createPostOnDiscordChannel,
 } from "./discord/index.js";
-// import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
+import { buildAlertEmbed } from "./discord/embed.js";
+
 import { loans, web3 } from "@frakt-protocol/frakt-sdk";
 
-// const postOnDiscord = await initDiscord()
- await initDiscord();
+await initDiscord();
 
 dotenv.config();
 
@@ -109,7 +109,7 @@ app.post("/new-loan", async (req, res) => {
     //   loanToValue,
     //   loanValue,
     // })
-    // await postOnDiscord(cardFilePath)
+    await createPostOnDiscordChannel(cardFilePath);
 
     removeCardFile(nftMint, processedLoans, 10 * 60 * 1000);
 
@@ -121,50 +121,7 @@ app.post("/new-loan", async (req, res) => {
   }
 });
 
-const FRAKT_POOL_PROGRAM_ID = "6cuqS7YmKLGK5waU3KJU6xLF7KCh6KJLRs6icpYJfefe";
-
-// app.get("/pool-alert", async (req, res) => {
-//   const connection = new web3.Connection(process.env.RPC_ENDPOINT, "confirmed");
-
-//   // const sig = await connection.getSignaturesForAddress(new PublicKey("6cuqS7YmKLGK5waU3KJU6xLF7KCh6KJLRs6icpYJfefe"))
-//   // Purchase - 5XzuUGKVBAHeodt9nHphkPd3cDkEcLacVyDSXSBTkb58vv9zBv3fodQygqHuyMwVovev743iDzQ7p83YKBzrAXFA
-//   // Deposit - 4MpHyGGeoxWy2NgVS7fFZ5SyVzy87CQ52B2WeWYWwQxDMVPWafVL69t5PQpBZZVMnFns2DNsQ6m1aT3JRTEvjREt
-//   // "Get lottery ticket" - 5doYCQrQZVB7vJu1h2MFy7GP7r3YfdKVq3iX9QnUsWQeLg9XKD6ctMpP5PEdRKfWbY4y1Cqt961bwu8KKPjuVNtZ
-
-//   const sig_res = await connection.getParsedTransaction(
-//     "5doYCQrQZVB7vJu1h2MFy7GP7r3YfdKVq3iX9QnUsWQeLg9XKD6ctMpP5PEdRKfWbY4y1Cqt961bwu8KKPjuVNtZ"
-//   );
-
-//   console.log(sig_res.meta.postTokenBalances)
-
-//   const is_purchase = sig_res.transaction.signatures.length === 1;
-//   const is_deposit = sig_res.transaction.signatures.length === 3;
-
-//   let signerPostBalance = sig_res.meta.postTokenBalances.find(
-//     (ptb) => ptb.accountIndex === 1
-//   );
-
-//   const nftMetadataByMint = await getArweaveMetadataByMint([
-//     "4SgWRA5fAMQSxQ2Qvjrg88y4TPvNu8ZHqbFJTRFfqoFn",
-//   ]);
-
-//   const metadata = nftMetadataByMint[signerPostBalance.mint];
-
-//   let message = "";
-//   if (is_purchase) {
-//     message = `${metadata.name} was just purchased from the frakt pool!`;
-//   }
-
-//   if (is_deposit) {
-//     message = `${metadata.name} was just added to the frakt pool!`;
-//   }
-
-//   res.send(`<p>${message}</p><br><img src="${metadata.image}">`);
-// });
-
 app.get("/liquidation-alert", async (req, res) => {
-  createPostOnDiscordFunction()
-
   try {
     const connection = new web3.Connection(
       process.env.RPC_ENDPOINT,
@@ -180,53 +137,34 @@ app.get("/liquidation-alert", async (req, res) => {
     const unfinishedLoans = loanData.filter(
       (loan) =>
         loan.loanStatus === "activated" &&
-        (loan.expiredAt - nowSeconds) / 60 / 60 < 24
+        loan.loanType !== "priceBased" &&
+        (loan.expiredAt - nowSeconds) / 60 / 60 < 24 &&
+        !liquidationAlerts.value.includes(loan.loanPubkey)
     );
 
-    let userDiscordId = await getDiscordId(
-      "BS61tv1KbsPhns3ppU8pmWozfReZjhxFL2MPhBdDWNEm"
-    );
+    const nftMints = unfinishedLoans.map((loan) => loan.nftMint);
+    const nftMetadataByMint = await getArweaveMetadataByMint(nftMints);
 
     const alerts = unfinishedLoans.map(async (loan) => {
-      if (liquidationAlerts.value.includes(loan.loanPublicKey)) {
-        console.log("This loan liquidation alert was already processed");
-      }
-
       liquidationAlerts.value = [...liquidationAlerts.value, loan.loanPubkey];
 
-      const {
-        loanPubkey,
-        user,
-        nftMint,
-        nftUserTokenAccount,
-        liquidityPool,
-        collectionInfo,
-        startedAt,
-        expiredAt,
-        finishedAt,
-        originalPrice,
-        amountToGet,
-        rewardAmount,
-        feeAmount,
-        royaltyAmount,
-        rewardInterestRate,
-        feeInterestRate,
-        royaltyInterestRate,
-        loanStatus,
-        loanType,
-      } = loan;
+      const { user, nftMint } = loan;
+
+      let userDiscordId = await getDiscordId(user);
 
       if (!userDiscordId) {
         console.log(`No associated discord id for user ${user}`);
       }
 
-      await sendDiscordMessage(
-        userDiscordId,
-        `Liquidation imminent for: \n ${JSON.stringify(loan)}!`
-      );
+      const embed = buildAlertEmbed({
+        metadata: nftMetadataByMint[nftMint],
+        loan,
+      });
+
+      await sendUserMessage(userDiscordId, embed);
     });
 
-    res.send(`Successfully sent ${alerts.length} alerts`);
+    res.send(`Sent ${alerts.length} alerts`);
   } catch (error) {
     console.error(error);
     res.statusCode = 503;
