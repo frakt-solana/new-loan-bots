@@ -209,7 +209,7 @@ app.get("/liquidation-alerts", async (req, res) => {
 
       const metadata = await getNftMetadataByMint(loan.nftMint);
 
-      if (!metadata) {
+      if (!metadata.nftImageUrl || !metadata.nftName) {
         errors = [loan.nftMint, ...errors];
 
         return;
@@ -227,7 +227,7 @@ app.get("/liquidation-alerts", async (req, res) => {
 
       const metadata = await getNftMetadataByMint(loan.nftMint);
 
-      if (!metadata) {
+      if (!metadata.nftImageUrl || !metadata.nftName) {
         errors = [loan.nftMint, ...errors];
 
         return;

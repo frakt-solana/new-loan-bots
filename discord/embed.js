@@ -16,7 +16,7 @@ export const buildAlertEmbed = ({ metadata, loan }) => {
         "https://cdn.discordapp.com/avatars/983383827235872799/84f7c27d2ba6e32873637063e6e2ccea.png?size=2048",
       url: "https://frakt.xyz/",
     })
-    .setDescription(metadata.name + ` will be liquidated in ${dueHours} hours if not repaid!`)
+    .setDescription(metadata.nftName + ` will be liquidated in ${dueHours} hours if not repaid!`)
     .setThumbnail(
       "https://cdn.discordapp.com/avatars/983383827235872799/84f7c27d2ba6e32873637063e6e2ccea.png?size=2048"
     )
@@ -24,6 +24,6 @@ export const buildAlertEmbed = ({ metadata, loan }) => {
       { name: "Loan Due By", value: dueAt.toUTCString() },
       { name: '\u200b', value: "https://frakt.xyz/loans" },
     )
-    .setImage(metadata.image)
+    .setImage(metadata.nftImageUrl)
     .setTimestamp();
 };
