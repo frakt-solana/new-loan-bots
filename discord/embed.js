@@ -4,7 +4,7 @@ export const buildAlertEmbed = ({ metadata, loan }) => {
   let dueAt = new Date(loan.expiredAt * 1000)
   let nowTime = new Date()
 
-  const dueHours = Math.floor((dueAt - nowTime) / 1000 / 60 / 60) + 48
+  const dueHours = Math.floor((dueAt - nowTime) / 1000 / 60 / 60)
 
   return new MessageEmbed()
     .setColor("#D0342C")

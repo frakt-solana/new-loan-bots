@@ -37,7 +37,10 @@ const processedLoans = {
 };
 
 const liquidationAlerts = {
-  value: [],
+  // 24 Hours before due date
+  firstAlert: [],
+  // 12 Hours before due date
+  finalAlert: [],
 };
 
 app.post("/new-loan", async (req, res) => {
@@ -134,43 +137,96 @@ app.get("/liquidation-alert", async (req, res) => {
     );
 
     const nowSeconds = new Date().getTime() / 1000;
+
+    // Filter out loans that are not active or are pricebased.
     const unfinishedLoans = loanData.filter(
       (loan) =>
-        loan.loanStatus === "activated" &&
-        loan.loanType !== "priceBased" &&
+        loan.loanStatus === "activated" && loan.loanType !== "priceBased"
+    );
+
+    // Find all loans that are due in the next 24 hours and haven't been alerted yet.
+    const alertableLoans = unfinishedLoans.filter(
+      (loan) =>
         (loan.expiredAt - nowSeconds) / 60 / 60 < 24 &&
-        !liquidationAlerts.value.includes(loan.loanPubkey)
+        !liquidationAlerts.firstAlert.includes(loan.loanPubkey)
+    );
+
+    // Find all loans that are due in the next 12 hours and haven't been alerted yet a second time.
+    const finalAlertableLoans = unfinishedLoans.filter(
+      (loan) =>
+        (loan.expiredAt - nowSeconds) / 60 / 60 < 12 &&
+        !liquidationAlerts.finalAlert.includes(loan.loanPubkey)
     );
 
     const nftMints = unfinishedLoans.map((loan) => loan.nftMint);
     const nftMetadataByMint = await getArweaveMetadataByMint(nftMints);
 
-    const alerts = unfinishedLoans.map(async (loan) => {
-      liquidationAlerts.value = [...liquidationAlerts.value, loan.loanPubkey];
+    let errors = [];
 
-      const { user, nftMint } = loan;
+    // Send alerts for loans that are due in the next 24 hours.
+    const firstAlerts = alertableLoans.map(async (loan) => {
+      liquidationAlerts.firstAlert = [
+        ...liquidationAlerts.firstAlert,
+        loan.loanPubkey,
+      ];
 
-      let userDiscordId = await getDiscordId(user);
+      let metadata = nftMetadataByMint[loan.nftMint];
 
-      if (!userDiscordId) {
-        console.log(`No associated discord id for user ${user}`);
+      if (!metadata) {
+        errors = [loan.nftMint, ...errors];
+
+        return;
       }
 
-      const embed = buildAlertEmbed({
-        metadata: nftMetadataByMint[nftMint],
-        loan,
-      });
-
-      await sendUserMessage(userDiscordId, embed);
+      sendLoanAlert(loan, metadata);
     });
 
-    res.send(`Sent ${alerts.length} alerts`);
+    // Send alerts for loans that are due in the next 12 hours.
+    const finalAlerts = finalAlertableLoans.map(async (loan) => {
+      liquidationAlerts.finalAlert = [
+        ...liquidationAlerts.finalAlert,
+        loan.loanPubkey,
+      ];
+
+      let metadata = nftMetadataByMint[loan.nftMint];
+
+      if (!metadata) {
+        errors = [loan.nftMint, ...errors];
+
+        return;
+      }
+
+      sendLoanAlert(loan, metadata);
+    });
+
+    res.send(
+      `Sent ${firstAlerts.length} first alerts, ${finalAlerts.length} final alerts, and ${errors.length} errors.`
+    );
   } catch (error) {
     console.error(error);
     res.statusCode = 503;
     res.send("Oh shit!");
   }
 });
+
+const sendLoanAlert = async (loan, metadata) => {
+  const { user } = loan;
+
+  let userDiscordId = await getDiscordId(
+    "BS61tv1KbsPhns3ppU8pmWozfReZjhxFL2MPhBdDWNEm"
+  );
+
+  if (!userDiscordId) {
+    console.log(`No associated discord id for user ${user}`);
+  }
+
+  const embed = buildAlertEmbed({
+    metadata,
+    loan,
+  });
+
+  await sendUserMessage(userDiscordId, embed);
+};
 
 app.listen(8080, function () {
   console.log(`Server is listening on port ${process.env.PORT || 8080}`);
