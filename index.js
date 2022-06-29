@@ -9,7 +9,7 @@ import {
   removeCardFile,
   generateCardFilePath,
 } from "./generateCard/index.js";
-// import { postTweet } from "./twitter/index.js";
+import { postTweet } from "./twitter/index.js";
 import { getNftMetadataByMint } from "./helpers.js";
 import {
   getDiscordId,
@@ -100,15 +100,15 @@ const generateAndPostCardFile = async ({
     loansType,
   });
 
-  // await postTweet({
-  //   fullPathToCardImage: cardFilePath,
-  //   nftName,
-  //   nftCollectionName,
-  //   period,
-  //   loanToValue,
-  //   loanValue,
-  //   loansType,
-  // });
+  await postTweet({
+    fullPathToCardImage: cardFilePath,
+    nftName,
+    nftCollectionName,
+    period,
+    loanToValue,
+    loanValue,
+    loansType,
+  });
 
   await createPostOnDiscordChannel(cardFilePath);
 
