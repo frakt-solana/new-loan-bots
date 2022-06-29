@@ -2,7 +2,9 @@ import Twit from 'twit'
 import { readFile } from 'fs/promises'
 import fetch from 'node-fetch'
 import dotenv from 'dotenv'
-dotenv.config()
+import { LONG_TERM } from '../index.js'
+import { getRandomMessage } from '../helpers.js'
+dotenv.config();
 
 const twitConfig = {
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
@@ -20,6 +22,7 @@ export const postTweet = async ({
   period,
   loanToValue,
   loanValue,
+  loansType,
 }) => {
   try {
     const imageData = await readFile(fullPathToCardImage, {
@@ -32,6 +35,7 @@ export const postTweet = async ({
       period,
       loanToValue,
       loanValue,
+      loansType,
     })
 
     const { data: mediaUploadData } = await client.post('media/upload', {
@@ -58,6 +62,7 @@ const generateTwitterPostText = async ({
   period,
   loanToValue,
   loanValue,
+  loansType,
 }) => {
   try {
     const allMessageTemplates = await (
@@ -67,14 +72,18 @@ const generateTwitterPostText = async ({
     //? If nft doesn't have collectionName, than filter out messageTemplates that include collectionName
     const messageTemplates = nftCollectionName
       ? allMessageTemplates
-      : allMessageTemplates.filter((message) =>
-          !message.includes('{nftCollectionName}')
+      : allMessageTemplates.filter(
+          (message) => !message.includes('{nftCollectionName}')
         )
 
-    //? Get random item from array of templates
+    const messageTemplatesForLoanTerm = allMessageTemplates.filter(
+      (message) => !message.includes('{period}')
+    )
+
     const message =
-      messageTemplates?.[Math.floor(Math.random() * messageTemplates.length)] ||
-      ''
+      loansType === LONG_TERM
+        ? getRandomMessage(messageTemplatesForLoanTerm)
+        : getRandomMessage(messageTemplates)
 
     return message
       .replace('{nftName}', nftName)
