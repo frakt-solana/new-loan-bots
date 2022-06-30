@@ -46,7 +46,7 @@ const generateAndPostCardFile = async ({
   const loanToValue = loanToValueNumber.toString()
   const loanValueNumber = rawLoanValue / 1e9 || 0
   const loanValue = loanValueNumber.toFixed(3)
-  const interest = (rawInterest / 100 || 0).toFixed(2)
+  const interest = (rawInterest / 100 || 0).toString()
   const nftPrice = (loanValue / (loanToValue / 100)).toFixed(2)
   const period = rawPeriod ? rawPeriod.toString() : '7'
 
