@@ -218,7 +218,7 @@ const createHTML = ({
           </p>
           <p class="data-row">
             <span class="data-title">${
-              loansType === SHORT_TERM ? 'Fee:' : 'Upfront fee:'
+              loansType === SHORT_TERM ? 'Fee:' : 'Interest:'
             } </span>${interest}%
           </p>
         </div>
