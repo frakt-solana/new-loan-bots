@@ -10,10 +10,10 @@ import {
   generateCardFilePath,
 } from './generateCard/index.js'
 import { postTweet } from './twitter/index.js'
-import { initDiscord } from './discord/index.js'
+import { initDiscord, createPostOnDiscordChannel } from './discord/index.js'
 import { getNftMetadataByMint } from './helpers.js'
 
-const postOnDiscord = await initDiscord()
+await initDiscord();
 
 const app = express()
 app.use(cors())
@@ -92,9 +92,9 @@ const generateAndPostCardFile = async ({
     loanValue,
     loansType,
   })
-  await postOnDiscord(cardFilePath)
+  await createPostOnDiscordChannel(cardFilePath)
 
-  removeCardFile(nftMint, processedLoans, 10 * 60 * 1000)
+  await removeCardFile(nftMint, processedLoans, 10 * 60 * 1000)
 }
 
 app.post('/new-loan-price', async (req, res) => {
@@ -106,7 +106,7 @@ app.post('/new-loan-price', async (req, res) => {
       interest: rawInterest,
     } = req.body
 
-    generateAndPostCardFile({
+    await generateAndPostCardFile({
       nftMint,
       rawLoanToValue,
       rawLoanValue,
