@@ -6,4 +6,5 @@
   "Aaaaah I'm loaning. {nftName} at {loanToValue}% LTV for {period} days. That's {loanValue} SOL. Aaaaaah I'm collateralizing.",
   "{nftName} just felt that warm, fuzzy feeling inside when it was {loanToValue}% collateralized to back a {loanValue} SOL loan.",
   "Instead of just standing there, {nftName} made us proud by backing a {period} days, {loanValue} SOL loan. Well done!"
+  "It would have been easier to just stay nice and cozy in the wallet. Instead {nftName} stepped up and backed a {period} days, {loanValue} SOL loan. GG!"
 ]
