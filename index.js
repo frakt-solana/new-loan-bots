@@ -106,16 +106,15 @@ app.post('/new-loan-price', async (req, res) => {
       interest: rawInterest,
     } = req.body
 
+    res.end()
+
     await generateAndPostCardFile({
       nftMint,
       rawLoanToValue,
       rawLoanValue,
       rawInterest,
       loansType: LONG_TERM,
-      res,
     })
-
-    res.end()
   } catch (error) {
     console.error(error)
     res.statusCode = 503
@@ -133,6 +132,8 @@ app.post('/new-loan-time', async (req, res) => {
       period: rawPeriod,
     } = req.body
 
+    res.end()
+
     await generateAndPostCardFile({
       nftMint,
       rawLoanToValue,
@@ -141,8 +142,6 @@ app.post('/new-loan-time', async (req, res) => {
       rawPeriod,
       loansType: SHORT_TERM,
     })
-
-    res.end()
   } catch (error) {
     console.error(error)
     res.statusCode = 503
