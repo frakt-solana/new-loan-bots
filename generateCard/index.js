@@ -22,7 +22,7 @@ export const removeCardFile = async (id, processedLoans, delay = 0) => {
   }
 }
 
-export const generateCardFile = async (
+export const generateLoanCardFile = async (
   id,
   { nftName, nftImageUrl, period, loanToValue, loanValue, interest, nftPrice, loansType }
 ) => {
@@ -32,7 +32,7 @@ export const generateCardFile = async (
     await nodeHtmlToImage({
       puppeteerArgs: { args: ['--no-sandbox', '--disable-setuid-sandbox'] },
       output: fullPath,
-      html: createHTML({
+      html: createLoanHTML({
         nftName,
         nftImageUrl,
         period,
@@ -69,7 +69,7 @@ const logoImage = await readFile(__dirname + '/images/logo.svg', {
   encoding: 'base64',
 })
 
-const createHTML = ({
+const createLoanHTML = ({
   nftName,
   nftImageUrl,
   period,
@@ -231,4 +231,156 @@ const createHTML = ({
   </div>
 </body>
 </html>
-`
+`;
+
+const createRaffleHTML = ({
+  nftName,
+  nftImageUrl,
+  buyoutPrice,
+  floorPrice
+}) => `
+<html>
+<head>
+    <style>
+        @font-face {
+            font-family: "Oxanium-extra-bold";
+            src: url(${oxaniumFontBold}) format('woff2');
+        }
+        @font-face {
+            font-family: "Oxanium-regular";
+            src: url(${oxaniumFontRegular}) format('woff2');
+        }
+        @font-face {
+            font-family: "Oxanium-medium";
+            src: url(${oxaniumFontMedium}) format('woff2');
+        }
+
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            color: #fff;
+            font-family: "Oxanium-regular";
+            font-size: 16px;
+            width: 1200px;
+            height: 675px;
+        }
+
+        .wrapper {
+            width: 1200px;
+            height: 675px;
+            background-color: #5D5FEF;
+            color: white;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .image {
+            width: 675px;
+            height: 675px;
+            background-image: url('${nftImageUrl}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .info {
+            flex: 1 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .frakt-logo {
+            height: 30px;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-family: "Oxanium-extra-bold";
+            text-transform: uppercase;
+            text-align: center;
+            font-size: 92px;
+            line-height: 80%;
+            margin-bottom: 30px;
+        }
+
+        .margin {
+            margin-bottom: 30px;
+        }
+
+        .text {
+            font-family: "Oxanium-medium";
+            font-size: 44px;
+            line-height: 55px;
+            text-transform: capitalize;
+        }
+
+        .bold {
+            font-family: "Oxanium-extra-bold";
+            text-transform: uppercase;
+        }
+
+        .flex {
+            width: 445px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+
+    </style>
+</head>
+
+<body>
+<div class="wrapper">
+    <div class="card">
+        <div class="image"></div>
+        <div class="info">
+            <img src="data:image/svg+xml;base64, ${logoImage}" class="frakt-logo" />
+            <h1 class="title">New raffle</h1>
+            <p class="text margin">${nftName}</p>
+            <p class="text flex">Buyout price: <span class="bold">${buyoutPrice} SOL</span></p>
+            <p class="text flex">Floor price: <span class="bold">${floorPrice} SOL</span></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+`;
+
+export const generateRaffleCardFile = async (
+  id,
+  { nftName, nftImageUrl, buyoutPrice, floorPrice }
+) => {
+  try {
+    const fullPath = generateCardFilePath(id);
+
+    await nodeHtmlToImage({
+      puppeteerArgs: { args: ['--no-sandbox', '--disable-setuid-sandbox'] },
+      output: fullPath,
+      html: createRaffleHTML({
+        nftName,
+        nftImageUrl,
+        buyoutPrice,
+        floorPrice
+      }),
+    });
+
+    console.log(`card_${id}.png generated`);
+
+    return true;
+  } catch (error) {
+    console.error('Generate image error', error);
+    return false;
+  }
+}

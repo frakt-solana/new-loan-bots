@@ -5,7 +5,8 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 import {
-  generateCardFile,
+  generateLoanCardFile,
+  generateRaffleCardFile,
   removeCardFile,
   generateCardFilePath,
 } from './generateCard/index.js'
@@ -26,7 +27,7 @@ const processedLoans = {
 export const SHORT_TERM = 'short-term'
 export const LONG_TERM = 'long-term'
 
-const generateAndPostCardFile = async ({
+const generateAndPostLoanCardFile = async ({
   nftMint,
   rawLoanToValue,
   rawLoanValue,
@@ -72,7 +73,7 @@ const generateAndPostCardFile = async ({
 
   const cardFilePath = generateCardFilePath(nftMint)
 
-  await generateCardFile(nftMint, {
+  await generateLoanCardFile(nftMint, {
     nftName,
     nftImageUrl,
     period,
@@ -97,6 +98,46 @@ const generateAndPostCardFile = async ({
   await removeCardFile(nftMint, processedLoans, 10 * 60 * 1000)
 }
 
+const generateAndPostRaffleCardFile = async ({
+  nftMint,
+  rawBuyoutPrice,
+  rawFloorPrice,
+}) => {
+  if (processedLoans.value.includes(nftMint)) {
+    console.log(`This loan was already processed in last 10 min`);
+    return;
+  }
+
+  processedLoans.value = [...processedLoans.value, nftMint];
+
+  const buyoutPrice = Number(rawBuyoutPrice / 1e9 || 0).toFixed(3);
+  const floorPrice = Number(rawFloorPrice / 1e9 || 0).toFixed(3);
+
+  const { nftImageUrl, nftName, nftCollectionName } = await getNftMetadataByMint(nftMint);
+
+  console.log('Raffle data: ', {
+    nftMint,
+    nftName,
+    nftImageUrl,
+    nftCollectionName,
+    buyoutPrice,
+    floorPrice,
+  });
+
+  if (!nftImageUrl || !nftName) {
+    console.log(`This nft has broken metadata`);
+    return;
+  }
+
+  const cardFilePath = generateCardFilePath(nftMint)
+
+  await generateRaffleCardFile(nftMint, { nftName, nftImageUrl, buyoutPrice, floorPrice });
+
+  await createPostOnDiscordChannel(cardFilePath);
+
+  await removeCardFile(nftMint, processedLoans, 10 * 60 * 1000);
+}
+
 app.post('/new-loan-price', async (req, res) => {
   try {
     const {
@@ -108,7 +149,7 @@ app.post('/new-loan-price', async (req, res) => {
 
     res.end()
 
-    await generateAndPostCardFile({
+    await generateAndPostLoanCardFile({
       nftMint,
       rawLoanToValue,
       rawLoanValue,
@@ -134,7 +175,7 @@ app.post('/new-loan-time', async (req, res) => {
 
     res.end()
 
-    await generateAndPostCardFile({
+    await generateAndPostLoanCardFile({
       nftMint,
       rawLoanToValue,
       rawLoanValue,
@@ -142,6 +183,29 @@ app.post('/new-loan-time', async (req, res) => {
       rawPeriod,
       loansType: SHORT_TERM,
     })
+  } catch (error) {
+    console.error(error)
+    res.statusCode = 503
+    res.send('Oh shit!')
+  }
+})
+
+app.post('/new-raffle', async (req, res) => {
+  try {
+    const {
+      nftMint,
+      rawBuyoutPrice,
+      rawFloorPrice,
+    } = req.body
+
+    res.end();
+
+    await generateAndPostRaffleCardFile({
+      nftMint,
+      rawBuyoutPrice,
+      rawFloorPrice,
+    });
+
   } catch (error) {
     console.error(error)
     res.statusCode = 503
