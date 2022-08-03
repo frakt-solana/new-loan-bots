@@ -314,9 +314,13 @@ const createRaffleHTML = ({
             line-height: 80%;
             margin-bottom: 30px;
         }
-
-        .margin {
-            margin-bottom: 30px;
+        
+        .name {
+            font-family: "Oxanium-extra-bold";
+            text-transform: capitalize;
+            font-size: 36px;
+            line-height: 45px;
+            margin-bottom: 30px;        
         }
 
         .text {
@@ -332,7 +336,7 @@ const createRaffleHTML = ({
         }
 
         .flex {
-            width: 445px;
+            padding: 0 20px;
             display: flex;
             justify-content: space-between;
         }
@@ -348,7 +352,7 @@ const createRaffleHTML = ({
         <div class="info">
             <img src="data:image/svg+xml;base64, ${logoImage}" class="frakt-logo" />
             <h1 class="title">New raffle</h1>
-            <p class="text margin">${nftName}</p>
+            <p class="name">${nftName}</p>
             <p class="text flex">Buyout price: <span class="bold">${buyoutPrice} SOL</span></p>
             <p class="text flex">Floor price: <span class="bold">${floorPrice} SOL</span></p>
         </div>
