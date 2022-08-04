@@ -324,6 +324,7 @@ const createRaffleHTML = ({
         }
 
         .text {
+            width: 100%;
             font-family: "Oxanium-medium";
             font-size: 36px;
             line-height: 45px;
