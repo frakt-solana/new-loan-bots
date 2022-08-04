@@ -17,13 +17,13 @@ export const initDiscord = async () => {
   return client
 }
 
-export const createPostOnDiscordChannel = async (fullPathToCardImage) => {
+export const createPostOnDiscordChannel = async (channelId, fullPathToCardImage) => {
   try {
     if (!client.isReady()) {
       return
     }
 
-    const channel = await client.channels.fetch(process.env.DISCORD_CHANNEL_ID)
+    const channel = await client.channels.fetch(channelId)
 
     await channel.send({
       files: [

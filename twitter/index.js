@@ -25,6 +25,8 @@ export const postTweet = async ({
   loansType,
 }) => {
   try {
+    const isLoan = period && loanToValue && loanValue && loansType;
+
     const imageData = await readFile(fullPathToCardImage, {
       encoding: 'base64',
     })
@@ -43,7 +45,7 @@ export const postTweet = async ({
       skip_status: true,
     })
     await client.post('statuses/update', {
-      status: text,
+      status: isLoan ? text : '',
       media_ids: mediaUploadData.media_id_string,
     })
 

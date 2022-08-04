@@ -93,7 +93,7 @@ const generateAndPostLoanCardFile = async ({
     loanValue,
     loansType,
   })
-  await createPostOnDiscordChannel(cardFilePath)
+  await createPostOnDiscordChannel(process.env.DISCORD_EVENTS_CHANNEL_ID, cardFilePath)
 
   await removeCardFile(nftMint, processedLoans, 10 * 60 * 1000)
 }
@@ -133,7 +133,13 @@ const generateAndPostRaffleCardFile = async ({
 
   await generateRaffleCardFile(nftMint, { nftName, nftImageUrl, buyoutPrice, floorPrice });
 
-  await createPostOnDiscordChannel(cardFilePath);
+  await postTweet({
+    fullPathToCardImage: cardFilePath,
+    nftName,
+    nftCollectionName,
+  })
+
+  await createPostOnDiscordChannel(process.env.DISCORD_LIQUIDATIONS_CHANNEL_ID, cardFilePath);
 
   await removeCardFile(nftMint, processedLoans, 10 * 60 * 1000);
 }
