@@ -77,7 +77,7 @@ const generateAndPostLoanCardFile = async ({
     nftName,
     nftImageUrl,
     period,
-    loanToValue,
+    loanToValue: Number(loanToValue).toFixed(),
     loanValue,
     interest,
     nftPrice,
