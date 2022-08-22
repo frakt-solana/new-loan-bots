@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 
 import { initDiscord, createPostOnDiscordChannel } from './discord/index.js';
 import { generateCardFilePath } from './generateCard/index.js';
-import { getNftMetadataByMint } from '../helpers.js';
+import { getNftMetadataByMint } from './helpers.js';
 import { generateLoanCardFile, generateRaffleCardFile, removeCardFile } from './generateCard/index.js';
 import { postTweet } from './twitter/index.js';
 
