@@ -15,8 +15,4 @@ export const getNftMetadataByMint = async (nftMint) => {
   };
 };
 
-export const getRandomMessage = (messagesArray) => {
-  return (
-    messagesArray?.[Math.floor(Math.random() * messagesArray.length)] || ''
-  );
-};
+export const getRandomMessage = (messagesArray) => (messagesArray?.[Math.floor(Math.random() * messagesArray.length)] || '');

@@ -1,33 +1,34 @@
-import nodeHtmlToImage from 'node-html-to-image'
-import font2base64 from 'node-font2base64'
-import { unlink as removeFile, readFile } from 'fs/promises'
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
-import { SHORT_TERM } from '../index.js'
+import nodeHtmlToImage from 'node-html-to-image';
+import font2base64 from 'node-font2base64';
+import { unlink as removeFile, readFile } from 'fs/promises';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import { SHORT_TERM } from '../index.js';
 
-export const __dirname = dirname(fileURLToPath(import.meta.url))
+export const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export const generateCardFilePath = (id) => `${__dirname}/cards/card_${id}.png`
+const oxaniumFontBold = await font2base64.encodeToDataUrl(__dirname + '/fonts/Oxanium-ExtraBold.ttf');
+const oxaniumFontRegular = await font2base64.encodeToDataUrl(__dirname + '/fonts/Oxanium-Regular.ttf');
+const oxaniumFontMedium = await font2base64.encodeToDataUrl(__dirname + '/fonts/Oxanium-Medium.ttf');
+const logoImage = await readFile(__dirname + '/images/logo.svg', { encoding: 'base64' });
 
-export const removeCardFile = async (id, processedLoans, delay = 0) => {
+export const generateCardFilePath = (id) => `${__dirname}/cards/card_${id}.png`;
+
+export const removeCardFile = async (id, delay = 0) => {
   try {
-    await new Promise((resolve) => setTimeout(resolve, delay))
+    await new Promise((resolve) => setTimeout(resolve, delay));
 
-    processedLoans.value = processedLoans.value.filter((mint) => mint === id)
-    await removeFile(generateCardFilePath(id))
+    await removeFile(generateCardFilePath(id));
 
-    console.log(`card_${id}.png removed`)
+    console.log(`card_${id}.png removed`);
   } catch (error) {
-    console.error('Error removing card', error)
+    console.error('Error removing card: ', error);
   }
-}
+};
 
-export const generateLoanCardFile = async (
-  id,
-  { nftName, nftImageUrl, period, loanToValue, loanValue, interest, nftPrice, loansType }
-) => {
+export const generateLoanCardFile = async (id, { nftName, nftImageUrl, period, loanToValue, loanValue, interest, nftPrice, loansType }) => {
   try {
-    const fullPath = generateCardFilePath(id)
+    const fullPath = generateCardFilePath(id);
 
     await nodeHtmlToImage({
       puppeteerArgs: { args: ['--no-sandbox', '--disable-setuid-sandbox'] },
@@ -42,43 +43,18 @@ export const generateLoanCardFile = async (
         nftPrice,
         loansType,
       }),
-    })
+    });
 
-    console.log(`card_${id}.png generated`)
+    console.log(`card_${id}.png generated`);
 
-    return true
+    return true;
   } catch (error) {
-    console.error('Generate image error', error)
-    return false
+    console.error('Generate image error: ', error);
+    return false;
   }
 }
 
-const oxaniumFontBold = await font2base64.encodeToDataUrl(
-  __dirname + '/fonts/Oxanium-ExtraBold.ttf'
-)
-
-const oxaniumFontRegular = await font2base64.encodeToDataUrl(
-  __dirname + '/fonts/Oxanium-Regular.ttf'
-)
-
-const oxaniumFontMedium = await font2base64.encodeToDataUrl(
-  __dirname + '/fonts/Oxanium-Medium.ttf'
-)
-
-const logoImage = await readFile(__dirname + '/images/logo.svg', {
-  encoding: 'base64',
-})
-
-const createLoanHTML = ({
-  nftName,
-  nftImageUrl,
-  period,
-  loanToValue,
-  loanValue,
-  interest,
-  nftPrice,
-  loansType
-}) => `
+const createLoanHTML = ({ nftName, nftImageUrl, period, loanToValue, loanValue, interest, nftPrice, loansType }) => `
 <html>
 <head>
   <style>
@@ -233,12 +209,7 @@ const createLoanHTML = ({
 </html>
 `;
 
-const createRaffleHTML = ({
-  nftName,
-  nftImageUrl,
-  buyoutPrice,
-  floorPrice
-}) => `
+const createRaffleHTML = ({ nftName, nftImageUrl, buyoutPrice, floorPrice }) => `
 <html>
 <head>
     <style>
@@ -363,10 +334,7 @@ const createRaffleHTML = ({
 </html>
 `;
 
-export const generateRaffleCardFile = async (
-  id,
-  { nftName, nftImageUrl, buyoutPrice, floorPrice }
-) => {
+export const generateRaffleCardFile = async (id, { nftName, nftImageUrl, buyoutPrice, floorPrice }) => {
   try {
     const fullPath = generateCardFilePath(id);
 
@@ -383,9 +351,7 @@ export const generateRaffleCardFile = async (
 
     console.log(`card_${id}.png generated`);
 
-    return true;
   } catch (error) {
-    console.error('Generate image error', error);
-    return false;
+    console.error('Generate image error: ', error);
   }
 }
