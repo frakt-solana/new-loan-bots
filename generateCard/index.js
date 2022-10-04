@@ -3,7 +3,8 @@ import font2base64 from 'node-font2base64';
 import { unlink as removeFile, readFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import repeatPromiseUntilResolved from 'repeat-promise-until-resolved';
+import originalFetch from 'isomorphic-fetch';
+import fetch  from 'fetch-retry';
 import { SHORT_TERM } from '../index.js';
 
 export const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -15,14 +16,16 @@ const logoImage = await readFile(__dirname + '/images/logo.svg', { encoding: 'ba
 
 export const generateCardFilePath = (id) => `${__dirname}/cards/card_${id}.png`;
 
-const toDataURL = (url) => () => fetch(url)
-    .then(response => response.blob())
-    .then(blob => new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onloadend = () => resolve(reader.result)
-      reader.onerror = reject
-      reader.readAsDataURL(blob)
-    }));
+const getBase64FromUrl = async (url) => {
+  const data = await fetch(originalFetch)(url, {
+    retries: 10,
+    retryDelay: 1000
+  });
+  const blob = await data.blob();
+  const buffer = await blob.arrayBuffer();
+
+  return 'data:' + blob.type + ';base64,' + Buffer.from(buffer).toString('base64');
+};
 
 export const removeCardFile = async (id, delay = 0) => {
   try {
@@ -65,7 +68,7 @@ export const generateLoanCardFile = async (id, { nftName, nftImageUrl, period, l
 }
 
 const createLoanHTML = async ({ nftName, nftImageUrl, period, loanToValue, loanValue, interest, nftPrice, loansType }) => {
-  const base64 = await repeatPromiseUntilResolved(toDataURL(nftImageUrl), { maxAttempts: 5 });
+  const base64 = await getBase64FromUrl(nftImageUrl);
 
   return `
 <html>
@@ -224,7 +227,7 @@ const createLoanHTML = async ({ nftName, nftImageUrl, period, loanToValue, loanV
 };
 
 const createRaffleHTML = async ({ nftName, nftImageUrl, buyoutPrice, floorPrice }) => {
-  const base64 = await repeatPromiseUntilResolved(toDataURL(nftImageUrl), { maxAttempts: 5 });
+  const base64 = await getBase64FromUrl(nftImageUrl);
 
   return `
 <html>
