@@ -23,6 +23,7 @@
     "node-font2base64": "^0.7.1",
     "node-html-to-image": "^3.2.4",
     "path": "^0.12.7",
+    "repeat-promise-until-resolved": "^1.0.11",
     "twit": "^2.2.11",
     "url": "^0.11.0"
   },

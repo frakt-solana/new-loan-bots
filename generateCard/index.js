@@ -3,6 +3,7 @@ import font2base64 from 'node-font2base64';
 import { unlink as removeFile, readFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import repeatPromiseUntilResolved from 'repeat-promise-until-resolved';
 import { SHORT_TERM } from '../index.js';
 
 export const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -13,6 +14,15 @@ const oxaniumFontMedium = await font2base64.encodeToDataUrl(__dirname + '/fonts/
 const logoImage = await readFile(__dirname + '/images/logo.svg', { encoding: 'base64' });
 
 export const generateCardFilePath = (id) => `${__dirname}/cards/card_${id}.png`;
+
+const toDataURL = (url) => () => fetch(url)
+    .then(response => response.blob())
+    .then(blob => new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result)
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    }));
 
 export const removeCardFile = async (id, delay = 0) => {
   try {
@@ -33,7 +43,7 @@ export const generateLoanCardFile = async (id, { nftName, nftImageUrl, period, l
     await nodeHtmlToImage({
       puppeteerArgs: { args: ['--no-sandbox', '--disable-setuid-sandbox'] },
       output: fullPath,
-      html: createLoanHTML({
+      html: await createLoanHTML({
         nftName,
         nftImageUrl,
         period,
@@ -54,7 +64,10 @@ export const generateLoanCardFile = async (id, { nftName, nftImageUrl, period, l
   }
 }
 
-const createLoanHTML = ({ nftName, nftImageUrl, period, loanToValue, loanValue, interest, nftPrice, loansType }) => `
+const createLoanHTML = async ({ nftName, nftImageUrl, period, loanToValue, loanValue, interest, nftPrice, loansType }) => {
+  const base64 = await repeatPromiseUntilResolved(toDataURL(nftImageUrl), { maxAttempts: 5 });
+
+  return `
 <html>
 <head>
   <style>
@@ -105,7 +118,7 @@ const createLoanHTML = ({ nftName, nftImageUrl, period, loanToValue, loanValue, 
       width: 515px;
       height: 515px;
       margin-right: 30px;
-      background-image: url('${nftImageUrl}');
+      background-image: url('${base64}');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -207,9 +220,13 @@ const createLoanHTML = ({ nftName, nftImageUrl, period, loanToValue, loanValue, 
   </div>
 </body>
 </html>
-`;
+`
+};
 
-const createRaffleHTML = ({ nftName, nftImageUrl, buyoutPrice, floorPrice }) => `
+const createRaffleHTML = async ({ nftName, nftImageUrl, buyoutPrice, floorPrice }) => {
+  const base64 = await repeatPromiseUntilResolved(toDataURL(nftImageUrl), { maxAttempts: 5 });
+
+  return `
 <html>
 <head>
     <style>
@@ -258,7 +275,7 @@ const createRaffleHTML = ({ nftName, nftImageUrl, buyoutPrice, floorPrice }) => 
         .image {
             width: 675px;
             height: 675px;
-            background-image: url('${nftImageUrl}');
+            background-image: url('${base64}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -332,7 +349,8 @@ const createRaffleHTML = ({ nftName, nftImageUrl, buyoutPrice, floorPrice }) => 
 </div>
 </body>
 </html>
-`;
+`
+};
 
 export const generateRaffleCardFile = async (id, { nftName, nftImageUrl, buyoutPrice, floorPrice }) => {
   try {
@@ -341,7 +359,7 @@ export const generateRaffleCardFile = async (id, { nftName, nftImageUrl, buyoutP
     await nodeHtmlToImage({
       puppeteerArgs: { args: ['--no-sandbox', '--disable-setuid-sandbox'] },
       output: fullPath,
-      html: createRaffleHTML({
+      html: await createRaffleHTML({
         nftName,
         nftImageUrl,
         buyoutPrice,
