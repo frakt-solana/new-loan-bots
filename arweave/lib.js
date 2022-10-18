@@ -7,7 +7,8 @@ import {
   METADATA_PREFIX,
   PROGRAM_IDS,
 } from './arweave.constant.js'
-import fetch from 'node-fetch'
+import originalFetch from 'isomorphic-fetch';
+import fetch from 'fetch-retry';
 
 const PubKeysInternedMap = new Map()
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -88,7 +89,10 @@ const createJsonObject = (url) => {
     if (!tokenMetadata) {
       return mints
     }
-    const arweaveData = await fetch(tokenMetadata.data.uri)
+    const arweaveData = await fetch(originalFetch)(tokenMetadata.data.uri, {
+      retries: 10,
+      retryDelay: 1000
+    })
       .then((res) => res.json().catch())
       .catch(() => {
         mints.push({ tokenMetadata, failed: true })

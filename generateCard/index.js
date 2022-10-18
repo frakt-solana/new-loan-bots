@@ -35,7 +35,7 @@ export const removeCardFile = async (id, delay = 0) => {
 
     console.log(`card_${id}.png removed`);
   } catch (error) {
-    console.error('Error removing card: ', error);
+    console.error('Error removing card: ', new Date(), error);
   }
 };
 
@@ -62,7 +62,7 @@ export const generateLoanCardFile = async (id, { nftName, nftImageUrl, period, l
 
     return true;
   } catch (error) {
-    console.error('Generate image error: ', error);
+    console.error('Generate image error: ', new Date(), error);
     return false;
   }
 }
@@ -373,6 +373,6 @@ export const generateRaffleCardFile = async (id, { nftName, nftImageUrl, buyoutP
     console.log(`card_${id}.png generated`);
 
   } catch (error) {
-    console.error('Generate image error: ', error);
+    console.error('Generate image error: ', new Date(), error);
   }
 }
