@@ -20,7 +20,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.post('/new-loan-price', async (req, res) => {
-  console.log('Price loan:', req.body);
+  console.log('Price loan:', new Date(), req.body);
 
   const {
     nftMint,
@@ -65,7 +65,7 @@ app.post('/new-loan-price', async (req, res) => {
 });
 
 app.post('/new-loan-time', async (req, res) => {
-  console.log('Time loan:', req.body);
+  console.log('Time loan:', new Date(), req.body);
 
   const {
     nftMint,
@@ -114,7 +114,7 @@ app.post('/new-loan-time', async (req, res) => {
 });
 
 app.post('/new-raffle', async (req, res) => {
-  console.log('Raffle data:', req.body);
+  console.log('Raffle data:', new Date(), req.body);
 
   const {
     nftMint,
