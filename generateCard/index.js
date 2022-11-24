@@ -9,10 +9,15 @@ import { SHORT_TERM } from '../index.js';
 
 export const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const oxaniumFontBold = await font2base64.encodeToDataUrl(__dirname + '/fonts/Oxanium-ExtraBold.ttf');
-const oxaniumFontRegular = await font2base64.encodeToDataUrl(__dirname + '/fonts/Oxanium-Regular.ttf');
-const oxaniumFontMedium = await font2base64.encodeToDataUrl(__dirname + '/fonts/Oxanium-Medium.ttf');
+const syneFontBold = await font2base64.encodeToDataUrl(__dirname + '/fonts/Syne/Syne-Bold.ttf');
+const syneFontExtraBold = await font2base64.encodeToDataUrl(__dirname + '/fonts/Syne/Syne-ExtraBold.ttf');
+const chakraRegular = await font2base64.encodeToDataUrl(__dirname + '/fonts/ChakraPetch/ChakraPetch-Regular.ttf');
+
 const logoImage = await readFile(__dirname + '/images/logo.svg', { encoding: 'base64' });
+const backImage = await readFile(__dirname + '/images/back.svg', { encoding: 'base64' });
+const newImage = await readFile(__dirname + '/images/new.svg', { encoding: 'base64' });
+const quoteImage = await readFile(__dirname + '/images/quote.svg', { encoding: 'base64' });
+const solanaImage = await readFile(__dirname + '/images/solana.svg', { encoding: 'base64' });
 
 export const generateCardFilePath = (id) => `${__dirname}/cards/card_${id}.png`;
 
@@ -75,16 +80,16 @@ const createLoanHTML = async ({ nftName, nftImageUrl, period, loanToValue, loanV
 <head>
   <style>
     @font-face {
-      font-family: "Oxanium-extra-bold";
-      src: url(${oxaniumFontBold}) format('woff2');
+      font-family: "Syne-Bold";
+      src: url(${syneFontBold}) format('woff2');
     }
     @font-face {
-      font-family: "Oxanium-regular";
-      src: url(${oxaniumFontRegular}) format('woff2');
+      font-family: "Syne-ExtraBold";
+      src: url(${syneFontExtraBold}) format('woff2');
     }
     @font-face {
-      font-family: "Oxanium-medium";
-      src: url(${oxaniumFontMedium}) format('woff2');
+      font-family: "ChakraPetch-Regular";
+      src: url(${chakraRegular}) format('woff2');
     }
 
     * {
@@ -94,98 +99,169 @@ const createLoanHTML = async ({ nftName, nftImageUrl, period, loanToValue, loanV
     }
 
     body {
-      color: #fff;
-      font-family: "Oxanium-regular";
+      color: #F3F3F3;
+      font-family: ChakraPetch-Regular;
       font-size: 16px;
-      width: 1200px;
-      height: 675px;
+      width: 1024px;
+      height: 512px;
     }
 
     .wrapper {
-      width: 1200px;
-      height: 675px;
-      background-color: #191919;
-      padding: 80px;
-    }
-
-    .card {
-      width: 100%;
-      height: 100%;
-      border-radius: 30px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-    }
-
-    .image {
-      width: 515px;
-      height: 515px;
-      margin-right: 30px;
-      background-image: url('${base64}');
-      background-size: cover;
-      background-position: center;
+      width: 1024px;
+      height: 512px;
+      background-color: #141415;
+      background-image: url("data:image/svg+xml;base64, ${backImage}");
       background-repeat: no-repeat;
-      border-radius: 30px;
+      background-size: 225px 200px;
+      background-position: right 0 top 0;
     }
-
+    
+    .image {
+        width: 512px;
+        height: 512px;
+        background-image: url('${base64}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    
+    .card {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+    }
+    
+    .frakt-logo {
+      position: absolute;
+      width: 80px;
+      height: 24px;
+      left: 924px;
+      top: 468px;
+    }
+    
+    .quote-top-left {
+      position: absolute;
+      width: 54px;
+      height: 44px;
+      left: 532px;
+      top: 20px;
+      transform: matrix(-1, 0, 0, 1, 0, 0);
+    }
+    
+    .quote-bottom-left {
+      position: absolute;
+      width: 54px;
+      height: 44px;
+      left: 532px;
+      top: 448px;
+      transform: rotate(-180deg);
+    }
+    
+    .quote-top-right {
+      position: absolute;
+      width: 54px;
+      height: 44px;
+      left: 950px;
+      top: 20px;
+    }
+    
+    .new {
+      position: absolute;
+      width: 115px;
+      height: 42px;
+      left: 710px;
+      top: 36px;
+    }
+    
     .info {
+      width: 512px;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       height: 100%;
     }
 
-    .frakt-logo {
-      height: 30px;
-      margin-top: 10px;
-      margin-bottom: 30px;
-    }
-
     .title {
-      font-family: Oxanium-extra-bold;
-      text-transform: uppercase;
-      font-size: 92px;
-      color: #5d5fef;
-      line-height: 80%;
-      margin-bottom: 30px;
-    }
-
-    .data-row {
-      color: white;
-      font-size: 40px;
-      margin-bottom: 20px;
-      line-height: 80%;
-    }
-
-    .data-title {
-      font-family: "Oxanium-extra-bold";
-      text-transform: capitalize;
-    }
-
-    .name-wrapper {
-      margin-top: ${loansType === SHORT_TERM ? '0' : '45px'};
-      flex: 1;
+      z-index: 1;
       width: 100%;
-      border-top: 1px solid #5d5fef;
-      background: linear-gradient(90deg,
-          rgba(93, 95, 239, 0.6) 0%,
-          rgba(93, 95, 239, 0) 100%);
-      padding: 20px;
-      border-radius: 0 0 0 30px;
-    }
-
-    .name-title {
-      font-family: "Oxanium-extra-bold";
+      font-family: Syne-ExtraBold;
       text-transform: uppercase;
-      font-size: 36px;
-      line-height: 45px;
+      text-align: center;
+      font-size: 40px;
+      line-height: 80%;
+      margin-top: 64px;
+      margin-bottom: 20px;
+    }
+    
+    .name {
+      width: 100%;
+      font-family: Syne-Bold;
+      font-size: 32px;
+      line-height: 38px;
+      text-align: center;
+      text-transform: uppercase;
     }
 
-    .name {
-      font-family: "Oxanium-medium";
-      font-size: 26px;
-      line-height: 32px;
+    .data {
+        width: 512px;
+        position: absolute;
+        top: 242px;
+        display: flex;
+        flex-direction: column;
+        row-gap: 30px;
     }
+    
+    .row {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .param {
+        width: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        row-gap: 16px;
+    }
+    
+    .param-title {
+        margin: 0;
+        color: #636366;
+        font-family: Syne-Bold;
+        font-size: 18px;
+        line-height: 80%;
+        text-transform: uppercase;
+    }
+    
+    .param-text {
+        margin: 0;
+        font-family: ChakraPetch-Regular;
+        font-size: 32px;
+        line-height: 80%;
+        text-transform: uppercase;
+    }
+    
+    .param-text-sol {
+        position: relative;
+        margin: 0;
+        font-family: ChakraPetch-Regular;
+        font-size: 32px;
+        line-height: 80%;
+        text-transform: uppercase;
+    }
+    
+    .param-text-sol:after {
+        position: absolute;
+        top: -2.5px;
+        content: url("data:image/svg+xml;base64, ${solanaImage}");
+        width: 32px;
+        height: 32px;
+    }
+    
+    
   </style>
 </head>
 
@@ -195,28 +271,42 @@ const createLoanHTML = async ({ nftName, nftImageUrl, period, loanToValue, loanV
       <div class="image"></div>
       <div class="info">
         <img src="data:image/svg+xml;base64, ${logoImage}" class="frakt-logo" />
-        <h1 class="title">New loan</h1>
+        <img src="data:image/svg+xml;base64, ${quoteImage}" class="quote-top-left" />
+        <img src="data:image/svg+xml;base64, ${quoteImage}" class="quote-top-right" />
+        <img src="data:image/svg+xml;base64, ${quoteImage}" class="quote-bottom-left" />
+        <img src="data:image/svg+xml;base64, ${newImage}" class="new" />
+        
+        <h1 class="title">LOAN</h1>
+        <h2 class="name">${nftName}</h2>
         <div class="data">
-        ${loansType === SHORT_TERM ? (
-          `<p class="data-row">
-            <span class="data-title">Period: </span>${period} days
-          </p>`
-        ) : ''}
-          <p class="data-row">
-            <span class="data-title">Loan To Value: </span>${loanToValue}%
-          </p>
-          <p class="data-row">
-            <span class="data-title">Loan Value: </span>${loanValue} SOL
-          </p>
-          <p class="data-row">
-            <span class="data-title">${
-              loansType === SHORT_TERM ? 'Fee:' : 'Interest:'
-            } </span>${interest}%
-          </p>
-        </div>
-        <div class="name-wrapper">
-          <p class="name-title">Nft collateral</p>
-          <p class="name">${nftName} | ${nftPrice} SOL</p>
+            <div class="row">
+                ${loansType === SHORT_TERM ? (
+                    `<div class="param">
+                        <p class="param-title">Duration</p>
+                        <p class="param-text">${period} days</p>
+                    </div>`
+                ) : ''}
+                <div class="param">
+                    <p class="param-title">Loan To Value</p>
+                    <p class="param-text">${loanToValue}%</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="param">
+                    <p class="param-title">Floor price</p>
+                    <p class="param-text-sol">${nftPrice}</p>
+                </div>
+                <div class="param">
+                    <p class="param-title">Borrowed</p>
+                    <p class="param-text-sol">${loanValue}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="param">
+                    <p class="param-title">${loansType === SHORT_TERM ? 'Fee' : 'Interest'}</p>
+                    <p class="param-text">${interest}%</p>
+                </div>
+            </div>
         </div>
       </div>
     </div>
@@ -234,16 +324,16 @@ const createRaffleHTML = async ({ nftName, nftImageUrl, buyoutPrice, floorPrice 
 <head>
     <style>
         @font-face {
-            font-family: "Oxanium-extra-bold";
-            src: url(${oxaniumFontBold}) format('woff2');
+          font-family: "Syne-Bold";
+          src: url(${syneFontBold}) format('woff2');
         }
         @font-face {
-            font-family: "Oxanium-regular";
-            src: url(${oxaniumFontRegular}) format('woff2');
+          font-family: "Syne-ExtraBold";
+          src: url(${syneFontExtraBold}) format('woff2');
         }
         @font-face {
-            font-family: "Oxanium-medium";
-            src: url(${oxaniumFontMedium}) format('woff2');
+          font-family: "ChakraPetch-Regular";
+          src: url(${chakraRegular}) format('woff2');
         }
 
         * {
